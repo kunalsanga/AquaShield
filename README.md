@@ -6,7 +6,7 @@ Aquashield is an AI-powered platform for predicting water-borne disease outbreak
 
 - `backend/`: FastAPI application for predictions and data management.
 - `scripts/`: ML training scripts and data generation.
-- `frontend-src/`: Source code for the Next.js frontend (components and pages).
+- `web-client/`: Source code for the Next.js frontend.
 
 ## Prerequisites
 
