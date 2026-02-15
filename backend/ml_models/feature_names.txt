@@ -1,0 +1,7 @@
+pH
+Turbidity
+Dissolved_Oxygen
+Temperature
+BOD
+Coliform_Bacteria
+Rainfall
