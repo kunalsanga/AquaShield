@@ -63,6 +63,39 @@ The frontend has been initialized in the `web-client` directory.
    ```
    Open `http://localhost:3000` in your browser.
 
+## Deployment
+
+### Option 1: Docker (Recommended for Unified Deployment)
+
+This project includes a `docker-compose.yml` file to orchestrate the backend, frontend, and database.
+
+1. Ensure you have Docker and Docker Compose installed.
+2. Run the following command in the root directory:
+   ```bash
+   docker-compose up --build -d
+   ```
+3. The services will be available at:
+   - Frontend: `http://localhost:3000`
+   - Backend API: `http://localhost:8000`
+   - Database: `postgres://postgres:password@localhost:5432/aquashield`
+
+### Option 2: Cloud Platforms (Vercel + Render)
+
+**Frontend (Vercel/Netlify):**
+1. Connect your GitHub repository.
+2. Set the **Root Directory** to `web-client`.
+3. The build command (`npm run build`) and output directory (`.next`) should be auto-detected.
+4. Add environment variables if needed (e.g., `NEXT_PUBLIC_API_URL` pointing to your backend).
+
+**Backend (Render/Railway):**
+1. Connect your GitHub repository.
+2. Select **Docker** as the environment.
+3. Set the **Root Directory** to `backend`.
+4. Ensure the build context includes the necessary files. Alternatively, deploy as a Python service:
+   - Build Command: `pip install -r requirements.txt`
+   - Start Command: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
+5. Add environment variables (DB credentials, etc.).
+
 ## Features
 
 - **AI Prediction Engine**: Predicts Cholera, Typhoid, and Diarrhea cases based on water quality metrics (pH, Turbidity, etc.).
