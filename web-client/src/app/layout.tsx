@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import Navbar from "@/components/Navbar";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-    title: "Aquashield",
-    description: "Water Disease Prediction System",
+    title: "AquaShield | Community Health Monitoring",
+    description: "Smart Early Warning System for Water-Borne Diseases",
 };
 
 export default function RootLayout({
@@ -16,7 +17,12 @@ export default function RootLayout({
 }>) {
     return (
         <html lang="en">
-            <body className={inter.className}>{children}</body>
+            <body className={`${inter.className} min-h-screen bg-gray-50 flex flex-col`}>
+                <Navbar />
+                <main className="flex-1">
+                    {children}
+                </main>
+            </body>
         </html>
     );
 }
