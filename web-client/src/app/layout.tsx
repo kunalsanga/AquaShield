@@ -2,9 +2,10 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { AuthProvider } from "@/lib/auth-context";
 import Navbar from "@/components/Navbar";
+import WaterBackground from "@/components/WaterBackground";
 import "./globals.css";
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
 export const metadata: Metadata = {
     title: "AquaShield | Community Health Monitoring",
@@ -16,7 +17,7 @@ export const viewport = {
     initialScale: 1,
     maximumScale: 5,
     userScalable: true,
-    themeColor: "#0f172a",
+    themeColor: "#0c5a8a",
 };
 
 export default function RootLayout({
@@ -27,18 +28,19 @@ export default function RootLayout({
     return (
         <html lang="en">
             <body
-                className={`${inter.className} min-h-screen min-h-dvh flex flex-col bg-gradient-to-br from-slate-50 via-white to-sky-50/60 text-slate-800 antialiased selection:bg-sky-200 selection:text-sky-900`}
+                className={`${inter.variable} font-sans min-h-screen min-h-dvh flex flex-col bg-background text-foreground antialiased selection:bg-primary/20 selection:text-primary`}
             >
+                <WaterBackground />
                 <AuthProvider>
                     <Navbar />
-                    <main className="flex-1 w-full">
+                    <main className="relative flex-1 w-full z-10">
                         <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
                             {children}
                         </div>
                     </main>
-                    <footer className="mt-auto border-t border-slate-200/80 bg-white/70 backdrop-blur-sm">
+                    <footer className="relative z-10 mt-auto border-t border-border/60 bg-card/80 backdrop-blur-md">
                         <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 sm:py-6 lg:px-8">
-                            <p className="text-center text-xs sm:text-sm text-slate-500 leading-relaxed">
+                            <p className="text-center text-xs sm:text-sm text-muted-foreground leading-relaxed">
                                 &copy; {new Date().getFullYear()} AquaShield. All rights reserved.
                             </p>
                         </div>

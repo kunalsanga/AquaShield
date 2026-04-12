@@ -1,76 +1,147 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
- 
+
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
- 
+    /* AquaShield Water Theme - Professional Blue Palette */
+    --background: 200 20% 98%;
+    --foreground: 203 30% 15%;
+
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
- 
+    --card-foreground: 203 30% 15%;
+
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
- 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
- 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
- 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
- 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
- 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
- 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
- 
-    --radius: 0.5rem;
+    --popover-foreground: 203 30% 15%;
+
+    /* Deep Ocean Blue - Primary */
+    --primary: 201 80% 35%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Light Aqua - Secondary */
+    --secondary: 199 60% 94%;
+    --secondary-foreground: 203 30% 15%;
+
+    --muted: 200 30% 92%;
+    --muted-foreground: 203 20% 45%;
+
+    /* Teal Accent */
+    --accent: 187 70% 42%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 200 25% 88%;
+    --input: 200 25% 88%;
+    --ring: 201 80% 35%;
+
+    --radius: 0.625rem;
+
+    /* Water Animation Colors */
+    --wave-primary: 201 80% 35%;
+    --wave-secondary: 199 65% 50%;
+    --wave-tertiary: 187 70% 60%;
   }
- 
+
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
- 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
- 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
- 
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
- 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
- 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
- 
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
- 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
- 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+    --background: 203 35% 8%;
+    --foreground: 200 20% 96%;
+
+    --card: 203 30% 12%;
+    --card-foreground: 200 20% 96%;
+
+    --popover: 203 30% 12%;
+    --popover-foreground: 200 20% 96%;
+
+    --primary: 199 85% 55%;
+    --primary-foreground: 203 35% 8%;
+
+    --secondary: 203 25% 18%;
+    --secondary-foreground: 200 20% 96%;
+
+    --muted: 203 25% 18%;
+    --muted-foreground: 200 15% 60%;
+
+    --accent: 187 65% 50%;
+    --accent-foreground: 203 35% 8%;
+
+    --destructive: 0 62% 40%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 203 25% 22%;
+    --input: 203 25% 22%;
+    --ring: 199 85% 55%;
+
+    --wave-primary: 199 85% 55%;
+    --wave-secondary: 201 70% 45%;
+    --wave-tertiary: 187 65% 50%;
   }
 }
- 
+
 @layer base {
   * {
     @apply border-border;
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+/* Water Wave Animation */
+@keyframes wave {
+  0% {
+    transform: translateX(0) translateY(0);
+  }
+  50% {
+    transform: translateX(-25%) translateY(2px);
+  }
+  100% {
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+@keyframes wave-reverse {
+  0% {
+    transform: translateX(-50%) translateY(0);
+  }
+  50% {
+    transform: translateX(-25%) translateY(-2px);
+  }
+  100% {
+    transform: translateX(0) translateY(0);
+  }
+}
+
+@keyframes wave-slow {
+  0% {
+    transform: translateX(0) translateY(0);
+  }
+  50% {
+    transform: translateX(-15%) translateY(3px);
+  }
+  100% {
+    transform: translateX(-30%) translateY(0);
+  }
+}
+
+.animate-wave {
+  animation: wave 12s ease-in-out infinite;
+}
+
+.animate-wave-reverse {
+  animation: wave-reverse 15s ease-in-out infinite;
+}
+
+.animate-wave-slow {
+  animation: wave-slow 20s ease-in-out infinite;
+}
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .animate-wave,
+  .animate-wave-reverse,
+  .animate-wave-slow {
+    animation: none;
   }
 }
