@@ -80,6 +80,9 @@ export interface PredictionInput {
     bod: number;
     coliform: number;
     rainfall: number;
+    latitude?: number;
+    longitude?: number;
+    location_name?: string;
 }
 
 export interface PredictionOutput {
@@ -92,6 +95,7 @@ export interface PredictionOutput {
     cholera_cases_predicted: number;
     typhoid_cases_predicted: number;
     diarrhea_cases_predicted: number;
+    rainfall?: number;
     explanation?: string;
     timestamp?: string;
 }

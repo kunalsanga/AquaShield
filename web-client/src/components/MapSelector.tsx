@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState, useMemo, useRef } from 'react';
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
-import L from 'local-leaflet-fallback'; // We'll just use window.L if we have to, but standard import 'leaflet' works if window is defined.
 import 'leaflet/dist/leaflet.css';
 
 // Fix Leaflet's default marker icon issue in Next.js/Webpack

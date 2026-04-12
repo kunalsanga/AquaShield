@@ -36,6 +36,7 @@ class PredictionOutput(BaseModel):
     cholera_cases_predicted: int
     typhoid_cases_predicted: int
     diarrhea_cases_predicted: int
+    rainfall: Optional[float] = None
     explanation: Optional[str] = None
     timestamp: Optional[datetime] = None
 

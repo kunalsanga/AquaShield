@@ -128,6 +128,7 @@ def predict_disease(input_data: schemas.PredictionInput, db: Session = Depends(g
         "cholera_cases_predicted": int(cholera_pred),
         "typhoid_cases_predicted": int(typhoid_pred),
         "diarrhea_cases_predicted": int(diarrhea_pred),
+        "rainfall": prediction.rainfall,
         "explanation": "Predicted based on current water quality metrics.",
         "timestamp": prediction.timestamp
     }
