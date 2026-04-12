@@ -85,6 +85,11 @@ def get_cpcb_dataset():
     if _cpcb_cache:
         return _cpcb_cache
         
+    # __file__ is in backend/app/api/endpoints/dashboard.py
+    # So we go up 4 directory levels to reach the repo root:
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    root_dir = os.path.abspath(os.path.join(current_dir, "../../../../"))
+        
     CPCB_FILES = [
         "WQuality_River-Data-2024.csv",
         "Water_pond_tanks_2024.csv",
@@ -93,7 +98,8 @@ def get_cpcb_dataset():
         "groundwater.csv"
     ]
     
-    for csv_path in CPCB_FILES:
+    for filename in CPCB_FILES:
+        csv_path = os.path.join(root_dir, filename)
         if not os.path.exists(csv_path):
             continue
             
@@ -157,7 +163,7 @@ def get_cpcb_dataset():
                 })
 
     # Read synthetic massive model dataset
-    synthetic_path = "water_pollution_disease.csv"
+    synthetic_path = os.path.join(root_dir, "water_pollution_disease.csv")
     if os.path.exists(synthetic_path):
         with open(synthetic_path, 'r', encoding='utf-8') as f:
             reader = csv.reader(f)
@@ -198,7 +204,7 @@ def get_cpcb_dataset():
                 })
             
     # Load Sambalpur high-accuracy regional dataset directly into map cache
-    sambalpur_path = "sambalpur_waterborne_disease_data.csv"
+    sambalpur_path = os.path.join(root_dir, "sambalpur_waterborne_disease_data.csv")
     if os.path.exists(sambalpur_path):
         with open(sambalpur_path, 'r', encoding='utf-8') as sf:
             s_reader = csv.reader(sf)
