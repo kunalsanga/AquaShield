@@ -4,7 +4,8 @@
  * whenever a JWT is present in localStorage.
  */
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api/v1";
+const RAW_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const BASE_URL = RAW_URL.includes("/api/v1") ? RAW_URL : `${RAW_URL.replace(/\/+$/, '')}/api/v1`;
 
 // ── Low-level fetch wrapper ───────────────────────────────────────────────────
 async function apiFetch<T>(
