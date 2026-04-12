@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { AuthProvider } from "@/lib/auth-context";
+import { ThemeProvider } from "@/components/theme-provider";
 import Navbar from "@/components/Navbar";
 import "./globals.css";
 
@@ -25,11 +26,12 @@ export default function RootLayout({
     children: React.ReactNode;
 }>) {
     return (
-        <html lang="en">
+        <html lang="en" suppressHydrationWarning>
             <body
-                className={`${inter.variable} font-sans min-h-screen min-h-dvh flex flex-col bg-background text-foreground antialiased selection:bg-primary/20 selection:text-primary`}
+                className={`${inter.variable} font-sans min-h-screen min-h-dvh flex flex-col bg-background text-foreground antialiased selection:bg-primary/20 selection:text-primary transition-colors duration-300`}
             >
-                <AuthProvider>
+                <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+                    <AuthProvider>
                     <Navbar />
                     <main className="relative flex-1 w-full z-10">
                         <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
@@ -44,6 +46,7 @@ export default function RootLayout({
                         </div>
                     </footer>
                 </AuthProvider>
+                </ThemeProvider>
             </body>
         </html>
     );

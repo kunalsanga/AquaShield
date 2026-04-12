@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Menu, X, Activity, Droplets, LogOut, LogIn, UserCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth-context";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 export default function Navbar() {
     const [isOpen, setIsOpen] = useState(false);
@@ -54,8 +55,8 @@ export default function Navbar() {
                 <div className="flex justify-between h-16 items-center">
                     {/* ── Logo ───────────────────────────────────────────── */}
                     <Link href="/" className="flex-shrink-0 flex items-center gap-2">
-                        <Droplets className="h-8 w-8 text-blue-600" />
-                        <span className="text-2xl font-bold text-gray-900 tracking-tight">
+                        <Droplets className="h-8 w-8 text-primary" />
+                        <span className="text-2xl font-bold tracking-tight">
                             AquaShield
                         </span>
                     </Link>
@@ -119,7 +120,7 @@ export default function Navbar() {
                                     </>
                                 ) : (
                                     <Link href="/login">
-                                        <Button size="sm" className="bg-blue-600 hover:bg-blue-700 gap-1.5">
+                                        <Button size="sm" className="bg-primary hover:bg-primary/90 gap-1.5">
                                             <LogIn className="w-4 h-4" />
                                             Sign In
                                         </Button>
@@ -127,13 +128,17 @@ export default function Navbar() {
                                 )}
                             </div>
                         )}
+                        <div className="pl-4 border-l border-border/40 hidden md:flex items-center">
+                            <ThemeToggle />
+                        </div>
                     </div>
 
                     {/* ── Mobile Hamburger ───────────────────────────────── */}
-                    <div className="flex items-center md:hidden">
+                    <div className="flex items-center md:hidden gap-3">
+                        <ThemeToggle />
                         <button
                             onClick={() => setIsOpen(!isOpen)}
-                            className="text-gray-700 hover:text-blue-600 focus:outline-none p-2"
+                            className="text-foreground hover:text-primary focus:outline-none p-2"
                         >
                             <span className="sr-only">Toggle menu</span>
                             {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
