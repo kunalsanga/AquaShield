@@ -1,4 +1,5 @@
 export type District =
+    | "Sambalpur"
     | "Dhubri"
     | "Kokrajhar"
     | "Barpeta"
