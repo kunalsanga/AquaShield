@@ -85,69 +85,117 @@ def get_cpcb_dataset():
     if _cpcb_cache:
         return _cpcb_cache
         
-    csv_path = "WQuality_River-Data-2024.csv"
-    if not os.path.exists(csv_path):
-        return []
-        
-    # Read ignoring first two lines as they are complex multi-line headers
-    # Actuall data usually starts at line 12 based on the file inspection!
-    with open(csv_path, 'r', encoding='utf-8') as f:
-        reader = csv.reader(f)
-        for i, row in enumerate(reader):
-            if i < 11: # Ignore headers
-                continue
-            if len(row) < 10:
-                continue
+    CPCB_FILES = [
+        "WQuality_River-Data-2024.csv",
+        "Water_pond_tanks_2024.csv",
+        "Water_Quality_Drains_STPs__WTPs_2024.csv",
+        "Water_Quality_data_of_Med_Min_River_2024.csv",
+        "groundwater.csv"
+    ]
+    
+    for csv_path in CPCB_FILES:
+        if not os.path.exists(csv_path):
+            continue
             
-            station_code = row[0]
-            name = row[1].replace('\n', ' ')
-            state = row[2].replace('\n', ' ').strip().upper()
-            
-            try:
-                # Get max values corresponding to DO, pH, BOD
-                do = float(row[4]) if row[4] else 6.0
-            except ValueError:
-                do = 6.0
+        with open(csv_path, 'r', encoding='utf-8', errors='ignore') as f:
+            reader = csv.reader(f)
+            for i, row in enumerate(reader):
+                if i < 11: # Ignore generic CPCB headers
+                    continue
+                if len(row) < 5:
+                    continue
                 
-            try:
-                ph = float(row[6]) if row[6] else 7.0
-            except ValueError:
-                ph = 7.0
+                station_code = row[0]
+                name = row[1].replace('\n', ' ')
                 
-            try:
-                bod = float(row[12]) if row[12] else 2.0
-            except ValueError:
-                bod = 2.0
+                # State column floats around index 2 to 3 depending on the dataset
+                state = row[2].replace('\n', ' ').strip().upper()
+                if "TEMPERATURE" in state or state == "":
+                    state = row[3].replace('\n', ' ').strip().upper() if len(row) > 3 else "UNKNOWN"
+                
+                # Approximate dynamic column grabbing
+                try:
+                    do = float(row[4]) if len(row) > 4 and row[4] else 6.0
+                except:
+                    do = 6.0
+                    
+                try:
+                    ph = float(row[6]) if len(row) > 6 and row[6] else 7.0
+                except:
+                    ph = 7.0
+                    
+                try:
+                    # BOD is generally deep down the row list
+                    bod = float(row[-2]) if len(row) > 2 else 2.0
+                    if bod > 100: bod = 2.0 # Safety constraint against formatting offset
+                except:
+                    bod = 2.0
 
-            # Determine risk based on BOD
-            if bod > 10:
-                risk_level = "High"
-            elif bod > 3:
-                risk_level = "Medium"
-            else:
-                risk_level = "Low"
+                if bod > 8.0:
+                    risk_level = "High"
+                elif bod > 3.0:
+                    risk_level = "Medium"
+                else:
+                    risk_level = "Low"
 
-            # Assign approximate lat/lng based on state + hash jitter for spread
-            base_lat, base_lng = STATE_COORDS.get(state, (22.3511, 78.6677))
-            
-            # Simple deterministic jitter so points aren't stacked
-            jitter_lat = ((hash(name) % 100) - 50) * 0.02
-            jitter_lng = ((hash(station_code) % 100) - 50) * 0.02
-            
-            lat = base_lat + jitter_lat
-            lng = base_lng + jitter_lng
-            
-            _cpcb_cache.append({
-                "id": station_code,
-                "location_name": name,
-                "latitude": lat,
-                "longitude": lng,
-                "ph": ph,
-                "dissolved_oxygen": do,
-                "bod": bod,
-                "risk_level": risk_level,
-                "timestamp": "2024-01-01T00:00:00Z"
-            })
+                # Assign approximate lat/lng based on state + hash jitter for spread
+                base_lat, base_lng = STATE_COORDS.get(state, (22.3511, 78.6677)) # Defaults to India central
+                
+                jitter_lat = ((hash(name) % 100) - 50) * 0.05
+                jitter_lng = ((hash(station_code) % 100) - 50) * 0.05
+                
+                _cpcb_cache.append({
+                    "id": station_code + "_" + str(i),
+                    "location_name": name,
+                    "latitude": base_lat + jitter_lat,
+                    "longitude": base_lng + jitter_lng,
+                    "ph": ph,
+                    "dissolved_oxygen": do,
+                    "bod": bod,
+                    "risk_level": risk_level,
+                    "timestamp": "2024-01-01T00:00:00Z"
+                })
+
+    # Read synthetic massive model dataset
+    synthetic_path = "water_pollution_disease.csv"
+    if os.path.exists(synthetic_path):
+        with open(synthetic_path, 'r', encoding='utf-8') as f:
+            reader = csv.reader(f)
+            next(reader)
+            for i, row in enumerate(reader):
+                if len(row) < 10: continue
+                # Village,District,pH,Temperature,Dissolved_Oxygen,BOD,Coliform_Bacteria,Turbidity,Rainfall,Cholera_Cases...
+                village, district = row[0], row[1].upper()
+                try:
+                    ph = float(row[2])
+                    do = float(row[4])
+                    bod = float(row[5])
+                    cholera = int(row[9])
+                except:
+                    continue
+                
+                if bod > 6.0 or cholera > 5:
+                    risk_level = "High"
+                elif bod > 3.0 or cholera > 2:
+                    risk_level = "Medium"
+                else:
+                    risk_level = "Low"
+                    
+                base_lat, base_lng = STATE_COORDS.get(district, (22.3511, 78.6677))
+                lat = base_lat + (((hash(village + "lat") % 100) - 50) * 0.04)
+                lng = base_lng + (((hash(village + "lng") % 100) - 50) * 0.04)
+                
+                _cpcb_cache.append({
+                    "id": f"synth_{i}",
+                    "location_name": f"{village}, {district}",
+                    "latitude": lat,
+                    "longitude": lng,
+                    "ph": ph,
+                    "dissolved_oxygen": do,
+                    "bod": bod,
+                    "risk_level": risk_level,
+                    "timestamp": "2024-05-01T00:00:00Z"
+                })
             
     # Load Sambalpur high-accuracy regional dataset directly into map cache
     sambalpur_path = "sambalpur_waterborne_disease_data.csv"
