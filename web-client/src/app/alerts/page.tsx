@@ -1,11 +1,13 @@
 'use client';
 
+import { withAuth } from "@/lib/withAuth";
+
 import { useState } from "react";
 import { ALERTS, DISTRICTS } from "@/lib/mockData";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { AlertCircle, AlertTriangle, Info } from "lucide-react";
 
-export default function AlertsPage() {
+function AlertsPage() {
     const [districtFilter, setDistrictFilter] = useState("All");
     const [riskFilter, setRiskFilter] = useState("All");
 
@@ -90,3 +92,5 @@ export default function AlertsPage() {
         </div>
     );
 }
+
+export default withAuth(AlertsPage, ["OFFICIAL"]);

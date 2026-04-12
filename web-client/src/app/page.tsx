@@ -1,9 +1,15 @@
+'use client';
+
 import Link from "next/link";
+import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowRight, BarChart2, ShieldCheck, Activity } from "lucide-react";
 
 export default function Home() {
+    const { user } = useAuth();
+    const role = user?.role;
+
     return (
         <div className="flex flex-col min-h-screen bg-gray-50">
             {/* Hero Section */}
@@ -17,17 +23,29 @@ export default function Home() {
                         Empowering communities with AI-driven insights to predict outbreaks, monitor water quality, and save lives in real-time.
                     </p>
                     <div className="flex flex-col sm:flex-row justify-center gap-4 w-full sm:w-auto">
-                        <Link href="/report" className="w-full sm:w-auto block">
-                            <Button size="lg" className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-lg px-8 py-6 h-auto">
-                                Report Health Data
-                                <ArrowRight className="ml-2 w-5 h-5" />
-                            </Button>
-                        </Link>
-                        <Link href="/dashboard" className="w-full sm:w-auto block">
-                            <Button variant="outline" size="lg" className="w-full sm:w-auto border-blue-600 text-blue-600 text-lg px-8 py-6 h-auto hover:bg-blue-50">
-                                View Live Dashboard
-                            </Button>
-                        </Link>
+                        {(!role || role === 'ASHA' || role === 'OFFICIAL') && (
+                            <Link href="/report" className="w-full sm:w-auto block">
+                                <Button size="lg" className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-lg px-8 py-6 h-auto">
+                                    Report Health Data
+                                    <ArrowRight className="ml-2 w-5 h-5" />
+                                </Button>
+                            </Link>
+                        )}
+                        {(!role || role === 'OFFICIAL') && (
+                            <Link href="/dashboard" className="w-full sm:w-auto block">
+                                <Button variant="outline" size="lg" className="w-full sm:w-auto border-blue-600 text-blue-600 text-lg px-8 py-6 h-auto hover:bg-blue-50">
+                                    View Live Dashboard
+                                </Button>
+                            </Link>
+                        )}
+                        {(role === 'PUBLIC') && (
+                            <Link href="/awareness" className="w-full sm:w-auto block">
+                                <Button size="lg" className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-lg px-8 py-6 h-auto">
+                                    View Awareness Guide
+                                    <ArrowRight className="ml-2 w-5 h-5" />
+                                </Button>
+                            </Link>
+                        )}
                     </div>
                 </div>
             </section>

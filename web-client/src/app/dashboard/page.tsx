@@ -1,5 +1,10 @@
 'use client';
 
+import { withAuth } from "@/lib/withAuth";
+import dynamic from "next/dynamic";
+
+const MapDashboard = dynamic(() => import("@/components/MapDashboard"), { ssr: false, loading: () => <div className="h-[500px] w-full rounded-xl bg-gray-100 animate-pulse border border-gray-200"></div> });
+
 import {
     Card,
     CardContent,
@@ -37,7 +42,7 @@ const DATA = [
     { name: "Week 6", cases: 60, rainfall: 140 },
 ];
 
-export default function Dashboard() {
+function Dashboard() {
     return (
         <div className="p-4 sm:p-8 space-y-8 animate-in fade-in duration-500">
             <div className="flex flex-col space-y-2">
@@ -91,6 +96,17 @@ export default function Dashboard() {
                     </CardContent>
                 </Card>
             </div>
+
+            {/* Geographical Distribution Map */}
+            <Card className="shadow-sm">
+                <CardHeader>
+                    <CardTitle>Geographical Risk Distribution</CardTitle>
+                    <CardDescription>Real-time map of predictive health reports across regions.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <MapDashboard />
+                </CardContent>
+            </Card>
 
             {/* Charts Section */}
             <div className="grid gap-4 grid-cols-1 lg:grid-cols-7">
@@ -193,3 +209,5 @@ export default function Dashboard() {
         </div>
     );
 }
+
+export default withAuth(Dashboard, ["OFFICIAL"]);

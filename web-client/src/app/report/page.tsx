@@ -1,16 +1,24 @@
 'use client';
 
+import { withAuth } from "@/lib/withAuth";
+
 import { useState } from "react";
+import dynamic from "next/dynamic";
+import { predictApi } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { DISTRICTS } from "@/lib/mockData";
-import { Check, Loader2 } from "lucide-react";
+import { Check, Loader2, MapPin } from "lucide-react";
 
-export default function ReportPage() {
+const MapSelector = dynamic(() => import("@/components/MapSelector"), { ssr: false });
+
+
+function ReportPage() {
     const [formData, setFormData] = useState({
-        district: DISTRICTS[0],
+        lat: null as number | null,
+        lng: null as number | null,
+        locationName: "",
         weekNumber: "",
         cases: "",
         rainfall: "",
@@ -19,6 +27,13 @@ export default function ReportPage() {
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitted, setSubmitted] = useState(false);
+    const [error, setError] = useState("");
+
+    const handleLocationSelect = (lat: number, lng: number, locationName: string) => {
+        setFormData(prev => ({ ...prev, lat, lng, locationName }));
+        setError("");
+    };
+
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const handleChange = (e: any) => {
@@ -29,14 +44,36 @@ export default function ReportPage() {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const handleSubmit = async (e: any) => {
         e.preventDefault();
+        
+        if (!formData.lat || !formData.lng) {
+            setError("Please select a location on the map.");
+            return;
+        }
+
         setIsSubmitting(true);
+        setError("");
 
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1500));
-
-        console.log("Submitted Data:", formData);
-        setIsSubmitting(false);
-        setSubmitted(true);
+        try {
+            // Mapping UI values to backend PredictionInput
+            // using simulated average sensor values for health worker reports
+            await predictApi.predict({
+                latitude: formData.lat,
+                longitude: formData.lng,
+                location_name: formData.locationName,
+                ph: 7.2,
+                turbidity: formData.waterQuality === 'Poor' ? 15.5 : formData.waterQuality === 'Moderate' ? 8.2 : 2.5,
+                temperature: 28.5,
+                dissolved_oxygen: 6.8,
+                bod: 3.2,
+                coliform: formData.waterQuality === 'Poor' ? 1500 : 250,
+                rainfall: parseFloat(formData.rainfall) || 0
+            });
+            setSubmitted(true);
+        } catch (err: any) {
+            setError(err.message || "Failed to submit report. Please try again.");
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     if (submitted) {
@@ -61,20 +98,18 @@ export default function ReportPage() {
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
+                    {error && (
+                        <div className="bg-red-50 text-red-600 text-sm p-3 rounded-md border border-red-100">
+                            {error}
+                        </div>
+                    )}
+
                     <div className="space-y-2">
-                        <Label htmlFor="district">District</Label>
-                        <select
-                            id="district"
-                            name="district"
-                            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                            value={formData.district}
-                            onChange={handleChange}
-                            required
-                        >
-                            {DISTRICTS.map(d => (
-                                <option key={d} value={d}>{d}</option>
-                            ))}
-                        </select>
+                        <Label className="flex items-center gap-2">
+                            <MapPin className="w-4 h-4" />
+                            Select Location
+                        </Label>
+                        <MapSelector onLocationSelect={handleLocationSelect} />
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -169,3 +204,5 @@ export default function ReportPage() {
         </div>
     );
 }
+
+export default withAuth(ReportPage, ["ASHA", "OFFICIAL"]);

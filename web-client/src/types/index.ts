@@ -38,3 +38,17 @@ export interface DashboardStats {
     waterQualityStatus: WaterQuality;
     currentRiskLevel: RiskLevel;
 }
+
+// ── Auth ─────────────────────────────────────────────────────────────────────
+export type UserRole = "ASHA" | "OFFICIAL" | "PUBLIC";
+
+export interface AuthUser {
+    email: string;
+    role: UserRole;
+    token: string;
+}
+
+export interface AuthState {
+    user: AuthUser | null;
+    isLoading: boolean;
+}
