@@ -135,8 +135,8 @@ export interface MapDataResponse {
 
 export const dashboardApi = {
     getSummary: () => apiFetch<Record<string, unknown>>("/dashboard/"),
-    getMapData: (lat: number, lng: number) => 
-        apiFetch<MapDataResponse>(`/dashboard/map-data?lat=${lat}&lng=${lng}&radius_km=50.0`),
+    getMapData: (lat: number, lng: number, allPoints: boolean = false) => 
+        apiFetch<MapDataResponse>(`/dashboard/map-data?lat=${lat}&lng=${lng}&radius_km=50.0&all_points=${allPoints}`),
 };
 
 // ── Alerts API ────────────────────────────────────────────────────────────────

@@ -30,15 +30,18 @@ interface MapSelectorProps {
     onLocationSelect: (lat: number, lng: number, locationName: string) => void;
 }
 
-function LocationMarker({ onSelect }: { onSelect: (lat: number, lng: number) => void }) {
-    const [position, setPosition] = useState<[number, number] | null>(null);
-
-    useMapEvents({
+function LocationMarker({ position, onSelect }: { position: L.LatLngTuple | null, onSelect: (lat: number, lng: number) => void }) {
+    const map = useMapEvents({
         click(e) {
-            setPosition([e.latlng.lat, e.latlng.lng]);
             onSelect(e.latlng.lat, e.latlng.lng);
         },
     });
+
+    useEffect(() => {
+        if (position) {
+            map.flyTo(position, 13, { duration: 1.5 });
+        }
+    }, [position, map]);
 
     return position === null ? null : (
         <Marker position={position}></Marker>
@@ -48,11 +51,13 @@ function LocationMarker({ onSelect }: { onSelect: (lat: number, lng: number) => 
 export default function MapSelector({ onLocationSelect }: MapSelectorProps) {
     const [locationName, setLocationName] = useState<string>("Click on the map to select a location");
     const [isLoadingName, setIsLoadingName] = useState(false);
+    const [pinPosition, setPinPosition] = useState<L.LatLngTuple | null>(null);
     
     // Debounce timer ref
     const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
 
     const handleSelect = (lat: number, lng: number) => {
+        setPinPosition([lat, lng]);
         setIsLoadingName(true);
         setLocationName(`Fetching location details...`);
         
@@ -90,8 +95,39 @@ export default function MapSelector({ onLocationSelect }: MapSelectorProps) {
         }, 800); // 800ms debounce
     };
 
+    const handleLocateMe = () => {
+        if ("geolocation" in navigator) {
+            setIsLoadingName(true);
+            setLocationName("Requesting device location...");
+            navigator.geolocation.getCurrentPosition(
+                (pos) => {
+                    const { latitude, longitude } = pos.coords;
+                    handleSelect(latitude, longitude);
+                },
+                (err) => {
+                    console.error("Geolocation failed", err);
+                    setLocationName("Location access denied or failed.");
+                    setIsLoadingName(false);
+                },
+                { enableHighAccuracy: true, timeout: 10000 }
+            );
+        } else {
+            alert("Geolocation is not supported by your browser");
+        }
+    };
+
     return (
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-2 relative">
+            <div className="flex justify-end mb-2">
+                <button 
+                    type="button"
+                    onClick={handleLocateMe}
+                    className="flex items-center gap-2 bg-blue-50 hover:bg-blue-100 text-blue-600 text-xs font-bold px-3 py-1.5 rounded-lg border border-blue-200 transition-colors"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v2"/><path d="M12 20v2"/><path d="M2 12h2"/><path d="M20 12h2"/><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="3"/></svg>
+                    Use Device Location
+                </button>
+            </div>
             <div className="h-[300px] w-full rounded-xl overflow-hidden border border-gray-200 shadow-inner z-0">
                 <MapContainer 
                     center={[22.3511, 78.6677]} // Center of India
@@ -103,12 +139,12 @@ export default function MapSelector({ onLocationSelect }: MapSelectorProps) {
                         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                     />
-                    <LocationMarker onSelect={handleSelect} />
+                    <LocationMarker position={pinPosition} onSelect={handleSelect} />
                 </MapContainer>
             </div>
             <div className="flex items-center justify-between text-sm text-gray-600 bg-gray-50 px-3 py-2 rounded-lg border border-gray-200">
-                <span className="font-medium text-gray-700">Selected: </span>
-                <span className={`${isLoadingName ? 'animate-pulse text-blue-600' : 'text-gray-900'}`}>
+                <span className="font-medium text-gray-700 w-16">Selected: </span>
+                <span className={`text-right truncate flex-1 ${isLoadingName ? 'animate-pulse text-blue-600' : 'text-gray-900'}`}>
                     {locationName}
                 </span>
             </div>

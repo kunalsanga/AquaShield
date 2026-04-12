@@ -4,9 +4,9 @@ import React from 'react';
 
 export default function WaterBackground() {
     return (
-        <div className="fixed inset-0 z-[-1] overflow-hidden pointer-events-none bg-gradient-to-b from-blue-50/50 to-white dark:from-slate-950 dark:to-slate-900">
+        <div className="fixed inset-0 z-[-1] overflow-hidden pointer-events-none bg-gradient-to-b from-blue-50/50 to-background">
             {/* Animated SVG waves for that water aesthetic */}
-            <div className="absolute w-full h-[50vh] bottom-0 opacity-40 mix-blend-multiply dark:mix-blend-screen">
+            <div className="absolute w-full h-[50vh] bottom-0 opacity-40">
                 <svg
                     className="absolute w-full h-full bottom-0 left-0"
                     viewBox="0 0 1440 320"
@@ -22,9 +22,11 @@ export default function WaterBackground() {
                     ></path>
                 </svg>
             </div>
-            
             {/* Subtle radial glow in the center */}
-            <div className="absolute top-[20%] left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-blue-400/5 dark:bg-blue-600/5 rounded-full blur-[100px]"></div>
+            <div 
+                className="absolute top-[20%] left-1/2 -translate-x-1/2 w-[80vh] h-[80vh] rounded-full opacity-50"
+                style={{ background: "radial-gradient(circle, rgba(59, 130, 246, 0.08) 0%, rgba(59, 130, 246, 0) 70%)" }}
+            ></div>
             
             <style jsx>{`
                 .animate-wave-slow {

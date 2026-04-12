@@ -19,9 +19,9 @@ function AlertsPage() {
 
     const getRiskColor = (level: string) => {
         switch (level) {
-            case "High": return "bg-red-50 border-red-500 text-red-900";
-            case "Moderate": return "bg-yellow-50 border-yellow-500 text-yellow-900";
-            default: return "bg-blue-50 border-blue-500 text-blue-900";
+            case "High": return "bg-red-50 dark:bg-red-950/30 border-red-500 text-red-900 dark:text-red-200";
+            case "Moderate": return "bg-yellow-50 dark:bg-amber-950/30 border-yellow-500 text-yellow-900 dark:text-amber-200";
+            default: return "bg-blue-50 dark:bg-blue-950/30 border-blue-500 text-blue-900 dark:text-blue-200";
         }
     };
 
@@ -37,13 +37,13 @@ function AlertsPage() {
         <div className="max-w-4xl mx-auto space-y-6">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold text-gray-900">Alerts & Notifications</h1>
-                    <p className="text-gray-500 mt-1">Real-time warnings for your district.</p>
+                    <h1 className="text-3xl font-bold text-foreground">Alerts & Notifications</h1>
+                    <p className="text-muted-foreground mt-1">Real-time warnings for your district.</p>
                 </div>
 
                 <div className="flex gap-4">
                     <select
-                        className="border rounded-md px-3 py-2 text-sm bg-white"
+                        className="border border-input rounded-md px-3 py-2 text-sm bg-background text-foreground focus:ring-2 focus:ring-ring focus:outline-none"
                         value={districtFilter}
                         onChange={(e) => setDistrictFilter(e.target.value)}
                     >
@@ -52,7 +52,7 @@ function AlertsPage() {
                     </select>
 
                     <select
-                        className="border rounded-md px-3 py-2 text-sm bg-white"
+                        className="border border-input rounded-md px-3 py-2 text-sm bg-background text-foreground focus:ring-2 focus:ring-ring focus:outline-none"
                         value={riskFilter}
                         onChange={(e) => setRiskFilter(e.target.value)}
                     >
@@ -66,7 +66,7 @@ function AlertsPage() {
 
             <div className="space-y-4">
                 {filteredAlerts.length === 0 ? (
-                    <div className="text-center py-10 text-gray-500 bg-white rounded-lg border border-dashed">
+                    <div className="text-center py-10 text-muted-foreground bg-card rounded-lg border border-border border-dashed">
                         No alerts found matching your criteria.
                     </div>
                 ) : (

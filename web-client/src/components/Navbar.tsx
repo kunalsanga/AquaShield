@@ -16,7 +16,15 @@ export default function Navbar() {
 
     // ── Role-based nav links ───────────────────────────────────────────────
     const roleLinks = () => {
-        if (!role) return [{ name: "Awareness", href: "/awareness" }];
+        if (!role) {
+            return [
+                { name: "Home", href: "/" },
+                { name: "Awareness", href: "/awareness" },
+                { name: "Check Risk", href: "/check-risk" },
+                { name: "Risk Map", href: "/map" },
+                { name: "Community Stats", href: "/stats" },
+            ];
+        }
 
         const links = [{ name: "Home", href: "/" }];
 
@@ -33,7 +41,12 @@ export default function Navbar() {
         }
 
         if (role === "PUBLIC") {
-            links.push({ name: "Awareness", href: "/awareness" });
+            links.push(
+                { name: "Awareness", href: "/awareness" },
+                { name: "Check Risk", href: "/check-risk" },
+                { name: "Risk Map", href: "/map" },
+                { name: "Community Stats", href: "/stats" }
+            );
         }
 
         return links;
@@ -44,13 +57,13 @@ export default function Navbar() {
     // ── Role badge colour ─────────────────────────────────────────────────
     const roleBadgeClass =
         role === "OFFICIAL"
-            ? "bg-purple-100 text-purple-700 border border-purple-200"
+            ? "bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800"
             : role === "ASHA"
-            ? "bg-emerald-100 text-emerald-700 border border-emerald-200"
-            : "bg-sky-100 text-sky-700 border border-sky-200";
+            ? "bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800"
+            : "bg-sky-100 dark:bg-sky-900/40 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-800";
 
     return (
-        <nav className="bg-white shadow-md w-full z-50 sticky top-0">
+        <nav className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 shadow-sm border-b border-border w-full z-50 sticky top-0">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex justify-between h-16 items-center">
                     {/* ── Logo ───────────────────────────────────────────── */}
@@ -67,7 +80,7 @@ export default function Navbar() {
                             <Link
                                 key={link.name}
                                 href={link.href}
-                                className="text-gray-700 hover:text-blue-600 transition-colors font-medium text-sm"
+                                className="text-foreground/80 hover:text-primary transition-colors font-medium text-sm"
                             >
                                 {link.name}
                             </Link>
@@ -83,8 +96,8 @@ export default function Navbar() {
                                         </span>
 
                                         {/* User email */}
-                                        <div className="flex items-center gap-1.5 text-sm text-gray-600">
-                                            <UserCircle2 className="w-4 h-4 text-gray-400" />
+                                        <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                                            <UserCircle2 className="w-4 h-4 text-muted-foreground" />
                                             <span className="max-w-[140px] truncate">{user.email}</span>
                                         </div>
 
@@ -149,25 +162,25 @@ export default function Navbar() {
 
             {/* ── Mobile Drawer ─────────────────────────────────────────── */}
             {isOpen && (
-                <div className="md:hidden bg-white border-t border-gray-100 absolute w-full shadow-lg z-50">
+                <div className="md:hidden bg-background border-t border-border absolute w-full shadow-lg z-50">
                     <div className="px-4 pt-2 pb-5 space-y-1">
                         {navLinks.map((link) => (
                             <Link
                                 key={link.name}
                                 href={link.href}
-                                className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50"
+                                className="block px-3 py-2 rounded-md text-base font-medium text-foreground hover:text-primary hover:bg-accent"
                                 onClick={close}
                             >
                                 {link.name}
                             </Link>
                         ))}
 
-                        <div className="pt-3 border-t border-gray-100 flex flex-col gap-2">
+                        <div className="pt-3 border-t border-border flex flex-col gap-2">
                             {user ? (
                                 <>
                                     <div className="flex items-center gap-2 px-3 py-1">
-                                        <UserCircle2 className="w-4 h-4 text-gray-400" />
-                                        <span className="text-sm text-gray-600 truncate">{user.email}</span>
+                                        <UserCircle2 className="w-4 h-4 text-muted-foreground" />
+                                        <span className="text-sm text-muted-foreground truncate">{user.email}</span>
                                         <span className={`ml-auto text-xs font-semibold px-2 py-0.5 rounded-full ${roleBadgeClass}`}>
                                             {role}
                                         </span>

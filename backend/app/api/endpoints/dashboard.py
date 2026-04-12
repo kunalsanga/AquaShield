@@ -154,10 +154,14 @@ def get_cpcb_dataset():
 
 @router.get(
     "/map-data",
-    summary="Fetch location-filtered map dataset",
-    dependencies=[Depends(require_role(["OFFICIAL", "ASHA"]))]
+    summary="Fetch location-filtered map dataset"
 )
-def get_map_data(lat: float = Query(...), lng: float = Query(...), radius_km: float = 50.0):
+def get_map_data(
+    lat: float = Query(0.0), 
+    lng: float = Query(0.0), 
+    radius_km: float = 50.0,
+    all_points: bool = Query(False)
+):
     dataset = get_cpcb_dataset()
     filtered = []
     
@@ -166,8 +170,12 @@ def get_map_data(lat: float = Query(...), lng: float = Query(...), radius_km: fl
     high_risk_count = 0
     
     for point in dataset:
-        dist = haversine(lat, lng, point["latitude"], point["longitude"])
-        if dist <= radius_km:
+        if all_points:
+            dist = 0
+        else:
+            dist = haversine(lat, lng, point["latitude"], point["longitude"])
+            
+        if all_points or dist <= radius_km:
             filtered.append(point)
             avg_ph += point["ph"]
             avg_bod += point["bod"]

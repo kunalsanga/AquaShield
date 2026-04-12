@@ -79,27 +79,27 @@ function ReportPage() {
     if (submitted) {
         return (
             <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-6">
-                <div className="bg-green-100 p-6 rounded-full">
-                    <Check className="w-16 h-16 text-green-600" />
+                <div className="bg-green-100 dark:bg-green-900/30 p-6 rounded-full">
+                    <Check className="w-16 h-16 text-green-600 dark:text-green-400" />
                 </div>
-                <h2 className="text-2xl font-bold text-gray-800">Report Submitted Successfully</h2>
-                <p className="text-gray-600">Thank you for updating the community health records.</p>
-                <Button onClick={() => setSubmitted(false)} className="bg-blue-600">Submit Another Report</Button>
+                <h2 className="text-2xl font-bold text-foreground">Report Submitted Successfully</h2>
+                <p className="text-muted-foreground">Thank you for updating the community health records.</p>
+                <Button onClick={() => setSubmitted(false)} className="bg-blue-600 hover:bg-blue-700 text-white">Submit Another Report</Button>
             </div>
         );
     }
 
     return (
         <div className="max-w-xl mx-auto py-6 sm:py-10 px-4">
-            <div className="bg-white shadow-xl rounded-2xl p-6 sm:p-8 border border-gray-100">
+            <div className="bg-card shadow-xl rounded-2xl p-6 sm:p-8 border border-border">
                 <div className="mb-8 text-center">
-                    <h1 className="text-2xl font-bold text-gray-900">Report Health Data</h1>
-                    <p className="text-gray-500 text-sm mt-2">ASHA Worker / Clinic Submission Form</p>
+                    <h1 className="text-2xl font-bold text-foreground">Report Health Data</h1>
+                    <p className="text-muted-foreground text-sm mt-2">ASHA Worker / Clinic Submission Form</p>
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
                     {error && (
-                        <div className="bg-red-50 text-red-600 text-sm p-3 rounded-md border border-red-100">
+                        <div className="bg-destructive/10 text-destructive text-sm p-3 rounded-md border border-destructive/20">
                             {error}
                         </div>
                     )}
