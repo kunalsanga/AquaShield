@@ -53,8 +53,8 @@ export default function ReportPage() {
     }
 
     return (
-        <div className="max-w-xl mx-auto py-10 px-4">
-            <div className="bg-white shadow-xl rounded-2xl p-8 border border-gray-100">
+        <div className="max-w-xl mx-auto py-6 sm:py-10 px-4">
+            <div className="bg-white shadow-xl rounded-2xl p-6 sm:p-8 border border-gray-100">
                 <div className="mb-8 text-center">
                     <h1 className="text-2xl font-bold text-gray-900">Report Health Data</h1>
                     <p className="text-gray-500 text-sm mt-2">ASHA Worker / Clinic Submission Form</p>
@@ -77,7 +77,7 @@ export default function ReportPage() {
                         </select>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-2">
                             <Label htmlFor="weekNumber">Week Number</Label>
                             <Input
@@ -107,7 +107,7 @@ export default function ReportPage() {
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-2">
                             <Label htmlFor="rainfall">Rainfall (mm)</Label>
                             <Input

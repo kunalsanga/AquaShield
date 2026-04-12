@@ -16,14 +16,14 @@ export default function Home() {
                     <p className="text-lg sm:text-xl text-gray-600 max-w-2xl mb-10">
                         Empowering communities with AI-driven insights to predict outbreaks, monitor water quality, and save lives in real-time.
                     </p>
-                    <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
-                        <Link href="/report">
+                    <div className="flex flex-col sm:flex-row justify-center gap-4 w-full sm:w-auto">
+                        <Link href="/report" className="w-full sm:w-auto block">
                             <Button size="lg" className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-lg px-8 py-6 h-auto">
                                 Report Health Data
                                 <ArrowRight className="ml-2 w-5 h-5" />
                             </Button>
                         </Link>
-                        <Link href="/dashboard">
+                        <Link href="/dashboard" className="w-full sm:w-auto block">
                             <Button variant="outline" size="lg" className="w-full sm:w-auto border-blue-600 text-blue-600 text-lg px-8 py-6 h-auto hover:bg-blue-50">
                                 View Live Dashboard
                             </Button>

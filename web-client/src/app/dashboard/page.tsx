@@ -39,7 +39,7 @@ const DATA = [
 
 export default function Dashboard() {
     return (
-        <div className="space-y-8 animate-in fade-in duration-500">
+        <div className="p-4 sm:p-8 space-y-8 animate-in fade-in duration-500">
             <div className="flex flex-col space-y-2">
                 <h1 className="text-3xl font-bold tracking-tight text-gray-900">Live Dashboard</h1>
                 <p className="text-gray-500">Real-time monitoring of community health metrics.</p>
@@ -93,10 +93,10 @@ export default function Dashboard() {
             </div>
 
             {/* Charts Section */}
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+            <div className="grid gap-4 grid-cols-1 lg:grid-cols-7">
 
                 {/* Cases Trend */}
-                <Card className="col-span-4 shadow-sm">
+                <Card className="col-span-1 lg:col-span-4 shadow-sm">
                     <CardHeader>
                         <CardTitle>Disease Outbreak Trends</CardTitle>
                         <CardDescription>Weekly reported diarrhea cases over time.</CardDescription>
@@ -145,7 +145,7 @@ export default function Dashboard() {
                 </Card>
 
                 {/* Rainfall vs Cases */}
-                <Card className="col-span-3 shadow-sm">
+                <Card className="col-span-1 lg:col-span-3 shadow-sm">
                     <CardHeader>
                         <CardTitle>Rainfall Impact</CardTitle>
                         <CardDescription>Correlation between rainfall (mm) and cases.</CardDescription>

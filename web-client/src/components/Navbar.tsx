@@ -86,12 +86,12 @@ export default function Navbar() {
                             </Link>
                         ))}
                         <div className="mt-4 flex flex-col gap-3">
-                            <Link href="/report" onClick={() => setIsOpen(false)}>
+                            <Link href="/report" onClick={() => setIsOpen(false)} className="w-full block">
                                 <Button className="w-full bg-blue-600 hover:bg-blue-700">
                                     Report Health Data
                                 </Button>
                             </Link>
-                            <Link href="/dashboard" onClick={() => setIsOpen(false)}>
+                            <Link href="/dashboard" onClick={() => setIsOpen(false)} className="w-full block">
                                 <Button variant="outline" className="w-full border-blue-600 text-blue-600">
                                     <Activity className="w-4 h-4 mr-2" />
                                     View Live Dashboard
