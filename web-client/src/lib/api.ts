@@ -111,8 +111,32 @@ export const predictApi = {
 };
 
 // ── Dashboard API ─────────────────────────────────────────────────────────────
+export interface MapDataPoint {
+    id: string;
+    location_name: string;
+    latitude: number;
+    longitude: number;
+    ph: number;
+    dissolved_oxygen: number;
+    bod: number;
+    risk_level: string;
+    timestamp: string;
+}
+
+export interface MapDataResponse {
+    stats: {
+        avg_ph: number;
+        avg_bod: number;
+        high_risk_count: number;
+        total_points: number;
+    };
+    points: MapDataPoint[];
+}
+
 export const dashboardApi = {
     getSummary: () => apiFetch<Record<string, unknown>>("/dashboard/"),
+    getMapData: (lat: number, lng: number) => 
+        apiFetch<MapDataResponse>(`/dashboard/map-data?lat=${lat}&lng=${lng}&radius_km=50.0`),
 };
 
 // ── Alerts API ────────────────────────────────────────────────────────────────
