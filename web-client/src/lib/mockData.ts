@@ -53,10 +53,17 @@ export const ALERTS: Alert[] = [
         date: "2024-02-10",
         riskLevel: "High",
         message: "Bacterial count exceeds safety threshold in community wells."
+    },
+    {
+        id: "5",
+        district: "Sambalpur",
+        date: "2024-06-15",
+        riskLevel: "High",
+        message: "Heavy rainfall causing increased turbidity and Cholera case spikes in Burla and Modipara."
     }
 ];
 
 export const DISTRICTS = [
-    "Dhubri", "Kokrajhar", "Barpeta", "Nalbari", "Baksa",
+    "Sambalpur", "Dhubri", "Kokrajhar", "Barpeta", "Nalbari", "Baksa",
     "Kamrup", "Darrang", "Sonitpur", "Lakhimpur", "Dhemaji"
 ];

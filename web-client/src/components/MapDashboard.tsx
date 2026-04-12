@@ -147,7 +147,7 @@ export default function MapDashboard() {
                 )}
 
                 <MapContainer 
-                    center={[22.3511, 78.6677]} // Center of India
+                    center={[21.4680, 83.9820]} // Default to Sambalpur
                     zoom={5} 
                     className="h-full w-full z-0 cursor-crosshair"
                 >

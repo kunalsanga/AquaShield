@@ -130,7 +130,7 @@ export default function MapSelector({ onLocationSelect }: MapSelectorProps) {
             </div>
             <div className="h-[300px] w-full rounded-xl overflow-hidden border border-gray-200 shadow-inner z-0">
                 <MapContainer 
-                    center={[22.3511, 78.6677]} // Center of India
+                    center={[21.4680, 83.9820]} // Default to Sambalpur
                     zoom={5} 
                     scrollWheelZoom={true} 
                     className="h-full w-full"

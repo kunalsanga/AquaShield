@@ -149,6 +149,53 @@ def get_cpcb_dataset():
                 "timestamp": "2024-01-01T00:00:00Z"
             })
             
+    # Load Sambalpur high-accuracy regional dataset directly into map cache
+    sambalpur_path = "sambalpur_waterborne_disease_data.csv"
+    if os.path.exists(sambalpur_path):
+        with open(sambalpur_path, 'r', encoding='utf-8') as sf:
+            s_reader = csv.reader(sf)
+            next(s_reader)  # Skip header
+            for row in s_reader:
+                if len(row) < 15:
+                    continue
+                
+                area = row[1]
+                lat = float(row[2])
+                lng = float(row[3])
+                
+                # Add micro-jitter so monthly data points spread out and create a Heatmap density effect
+                jitter_lat = ((hash(row[11] + area) % 100) - 50) * 0.005
+                jitter_lng = ((hash(area + row[11]) % 100) - 50) * 0.005
+                
+                lat += jitter_lat
+                lng += jitter_lng
+
+                ph = float(row[4])
+                bod = float(row[5])
+                do = float(row[6])
+                cholera = int(row[12])
+                diarrhea = int(row[14])
+                
+                # Dynamic risk evaluation incorporating exact outbreak case counts from dataset
+                if bod > 6.0 or cholera > 3 or diarrhea > 20:
+                    risk_level = "High"
+                elif bod > 3.0 or cholera > 1:
+                    risk_level = "Medium"
+                else:
+                    risk_level = "Low"
+
+                _cpcb_cache.append({
+                    "id": f"samb_{area}_{row[11]}",
+                    "location_name": f"{area}, Sambalpur ({row[11]})",
+                    "latitude": lat,
+                    "longitude": lng,
+                    "ph": ph,
+                    "dissolved_oxygen": do,
+                    "bod": bod,
+                    "risk_level": risk_level,
+                    "timestamp": f"2024-{row[11]}-01T00:00:00Z"
+                })
+                
     return _cpcb_cache
 
 
