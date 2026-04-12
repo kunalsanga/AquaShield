@@ -4,7 +4,7 @@
 
 ### Smart Community Health Monitoring System
 
-**AI-powered platform for predicting water-borne disease outbreaks in rural Northeast India**
+**AI-powered platform for predicting water-borne disease outbreaks in rural Northeast India using 2024 CPCB Water Quality Datasets.**
 
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.109-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
 [![Next.js](https://img.shields.io/badge/Next.js-14-black?style=for-the-badge&logo=next.js&logoColor=white)](https://nextjs.org)
@@ -18,7 +18,19 @@
 
 ## 📖 Overview
 
-AquaShield is a full-stack AI platform that monitors water quality metrics from IoT sensors and uses machine learning models to predict the outbreak risk of **Cholera**, **Typhoid**, and **Diarrhea** in rural communities. It provides an interactive dashboard for health officials and community workers to take early preventive action.
+AquaShield is a full-stack ML-driven platform that monitors water quality metrics and predicts the outbreak risk of **Cholera**, **Typhoid**, and **Diarrhea** in rural communities. By analyzing core metrics like **pH, BOD, Dissolved Oxygen, and Coliform** from genuine Central Pollution Control Board (CPCB) data, AquaShield provides intuitive tools for the Public, alongside secure data-entry workflows for ASHA Workers and Health Officials.
+
+---
+
+## 🚀 Recent Major Updates: The Public Expansion
+
+The application has recently undergone massive upgrades to provide a seamless, rich visual experience heavily powered by real-world datasets:
+
+- **Central Pollution Control Board (CPCB) 2024 Dataset Integration**: Migrated the internal prediction engine from synthetic CSVs to authentic national-level river statistics. Includes a custom `prepare_dataset.py` pipeline that automatically synthesizes minimum/maximum bounds into actionable features (Turbidity, Target Output Cases, etc.).
+- **Public Interactive Heatmap (`/map`)**: Added a Nationwide Water Quality Heatmap leveraging `react-leaflet`. Public users can see localized risks, and officials can switch between 50km radius markers and total-country overlap rendering.
+- **Smart Geolocation Risk Checker (`/check-risk`)**: Public users can evaluate their exact contamination probability. Includes a custom `<MapSelector>` that allows them to pinpoint their location manually, use HTML5 Device Geolocation to auto-pan (`flyTo`), or automatically reverse-geocode district names in an autocomplete `<datalist>`.
+- **Public Health Trends (`/stats`)**: Historical aggregation visually mapped out over dynamic `Recharts` graphs covering rolling weekly outbreak figures.
+- **Modernized UI Engine**: Full theme persistence (Dark/Light mode support), fluid background wave computations (`WaterBackground`), dynamic awareness UI guidelines, and strict API layer optimizations.
 
 ---
 
@@ -28,49 +40,61 @@ AquaShield is a full-stack AI platform that monitors water quality metrics from 
 AquaShield/
 ├── backend/                    # FastAPI backend server
 │   ├── app/
-│   │   ├── api/               # Route handlers
-│   │   ├── core/              # Config & settings
+│   │   ├── api/endpoints/     # Route handlers (auth, dashboard, predict, sensor, users)
+│   │   ├── core/              # Config & settings (RBAC)
 │   │   ├── db/                # Database session & models
 │   │   ├── models/            # SQLAlchemy ORM models
-│   │   ├── schemas/           # Pydantic schemas
-│   │   ├── main.py            # FastAPI app entry point
-│   │   └── ml_utils.py        # ML inference utilities
-│   ├── ml_models/             # Trained ML model artifacts (.pkl)
+│   │   ├── schemas/           # Pydantic validation models
+│   │   ├── main.py            # FastAPI entry point
+│   │   └── ml_utils.py        # ML inference loading utilities
+│   ├── ml_models/             # Random Forest/XGB Trained artifacts (.pkl)
 │   ├── requirements.txt       # Python dependencies
 │   └── Dockerfile
-├── web-client/                 # Next.js 14 frontend
+├── web-client/                 # Next.js 14 frontend environment
 │   ├── src/
 │   │   ├── app/               # App router pages
-│   │   │   ├── dashboard/     # Main dashboard
-│   │   │   ├── alerts/        # Alerts page
-│   │   │   ├── awareness/     # Health awareness
-│   │   │   └── report/        # Reports page
-│   │   ├── components/        # Reusable UI components
-│   │   ├── lib/               # Utilities & mock data
-│   │   └── types/             # TypeScript type definitions
-│   ├── package.json
-│   └── Dockerfile
+│   │   │   ├── check-risk/    # Location-based dynamic threat modeling
+│   │   │   ├── map/           # National Heatmap & API overlay
+│   │   │   ├── stats/         # Visual data reporting with Recharts
+│   │   │   ├── dashboard/     # Official dashboard
+│   │   │   ├── alerts/        # Realtime Alerts feed
+│   │   │   ├── awareness/     # Contextual safety manuals
+│   │   │   └── report/        # Map-integrated clinical reporting
+│   │   ├── components/        # MapSelector, Navbar, UI Primitives
+│   │   └── lib/               # Shared logic & mock fallback state
+│   └── package.json
 ├── scripts/
-│   ├── generate_data.py       # Synthetic dataset generator
-│   └── train_model.py         # ML model training script
-├── water_pollution_disease.csv # Training dataset
+│   ├── prepare_dataset.py     # Aggregates CPCB multi-row data
+│   ├── generate_data.py       # Fallback mock generator
+│   └── train_model.py         # Sklearn/XGB ingest compiler
+├── WQuality_River-Data-2024.csv # Authentic CPCB national parameters
 ├── docker-compose.yml
 └── .gitignore
 ```
 
 ---
 
-## ✨ Features
+## ✨ Features by Role
 
+### 🔓 **Public (Unauthenticated)**
 | Feature | Description |
 |---|---|
-| 🤖 **AI Prediction Engine** | XGBoost models predicting Cholera, Typhoid & Diarrhea risk scores |
-| 📊 **Interactive Dashboard** | Real-time charts for water quality metrics and risk trends |
-| 🚨 **Alert System** | Automated risk-level alerts for health officials |
-| 📡 **IoT Sensor API** | REST endpoints for ingesting live sensor data |
-| 📋 **Report Generation** | Download detailed health & water quality reports |
-| 🔐 **Secure API** | JWT-based authentication with bcrypt password hashing |
-| 🐳 **Docker Support** | Full containerized deployment with Docker Compose |
+| 📍 **Check Risk** | Find localized water risk via Device GPS, Map Pinpointing, or Search. |
+| 🗺️ **India Heatmap** | Interactive Leaflet map displaying real-time National or Regional water states. |
+| 📊 **Community Stats**| Visualize health outcomes (Diarrhea, Cholera, Typhoid cases). |
+| 🆘 **Actionable Safety**| Dynamic `/awareness` tutorials that shift tone based on current risk states. |
+
+### 🩺 **ASHA Worker / Community Health**
+| Feature | Description |
+|---|---|
+| 📝 **Clinical Map Reports** | Form input heavily augmented by HTML5 Map interactions reverse geolocating clinics. |
+| 🚨 **Local Alerts** | Review system-generated hazard thresholds. |
+
+### 🏛️ **Official**
+| Feature | Description |
+|---|---|
+| 📈 **Admin Dashboard** | Oversight panel analyzing system-wide stats and aggregate sensor deployments. |
+| ⚙️ **User Management** | Future-proofed administration endpoints for local health workers. |
 
 ---
 
@@ -78,13 +102,12 @@ AquaShield/
 
 Make sure the following are installed on your system:
 
-| Tool | Version | Link |
-|---|---|---|
-| Python | 3.9+ | [python.org](https://python.org) |
-| Node.js | 18+ | [nodejs.org](https://nodejs.org) |
-| npm | 9+ | Comes with Node.js |
-| Git | Any | [git-scm.com](https://git-scm.com) |
-| Docker *(optional)* | Latest | [docker.com](https://docker.com) |
+| Tool | Version |
+|---|---|
+| Python | 3.9+ |
+| Node.js | 18+  |
+| npm | 9+     |
+| Git | Any    |
 
 ---
 
@@ -97,47 +120,35 @@ git clone https://github.com/kunalsanga/AquaShield.git
 cd AquaShield
 ```
 
----
+### Step 2 — Backend & ML Setup
 
-### Step 2 — Backend Setup
-
-#### 2a. Create a Python Virtual Environment
+#### 2a. Enable Environment & Install Dependencies
 
 ```bash
-# Create virtual environment
 python -m venv .venv
-
-# Activate it
 # On Windows:
 .venv\Scripts\activate
 # On macOS/Linux:
 source .venv/bin/activate
-```
 
-#### 2b. Install Python Dependencies
-
-```bash
 pip install -r backend/requirements.txt
 ```
 
-#### 2c. Train the ML Models *(first-time only)*
+#### 2b. Prepare Dataset & Train Model
 
-This step reads `water_pollution_disease.csv` and generates the model `.pkl` files in `backend/ml_models/`.
+We have successfully migrated to the new CPCB dataset. You **must** run the preparation step to synthesize parameters before injecting them into the ML models.
 
 ```bash
+python scripts/prepare_dataset.py
 python scripts/train_model.py
 ```
 
-#### 2d. Start the Backend Server
+#### 2c. Start the Backend Server
 
 ```bash
 uvicorn backend.app.main:app --reload
 ```
-
-✅ Backend is now running at:
-- **API Base:** `http://localhost:8000`
-- **Interactive Docs (Swagger):** `http://localhost:8000/docs`
-- **Alternative Docs (ReDoc):** `http://localhost:8000/redoc`
+✅ **API Running at:** `http://localhost:8000/docs`
 
 ---
 
@@ -145,26 +156,13 @@ uvicorn backend.app.main:app --reload
 
 Open a **new terminal** window/tab:
 
-#### 3a. Navigate to the Frontend Directory
-
 ```bash
 cd web-client
-```
-
-#### 3b. Install Node Dependencies
-
-```bash
 npm install
-```
-
-#### 3c. Start the Development Server
-
-```bash
 npm run dev
 ```
 
-✅ Frontend is now running at:
-- **Web App:** `http://localhost:3000`
+✅ **Frontend Running at:** `http://localhost:3000`
 
 ---
 
@@ -173,120 +171,22 @@ npm run dev
 Run the entire stack (backend + frontend + PostgreSQL) with a single command:
 
 ```bash
-# Build and start all services
-docker-compose up --build
-
-# Run in detached (background) mode
 docker-compose up --build -d
-
-# Stop all services
-docker-compose down
 ```
 
 | Service | URL |
 |---|---|
-| Frontend | `http://localhost:3000` |
-| Backend API | `http://localhost:8000` |
+| Web App | `http://localhost:3000` |
 | API Docs | `http://localhost:8000/docs` |
-| PostgreSQL | `postgres://postgres:password@localhost:5432/aquashield` |
+| PostgreSQL | `postgresql://postgres:password@localhost:5432/aquashield` |
 
 ---
 
-## ⚙️ Environment Variables
+## 📡 Essential Endpoints Update
 
-For local development, you can create a `.env` file in the project root. **Do not commit this file** — it is already in `.gitignore`.
-
-```env
-# Backend
-DATABASE_URL=postgresql://postgres:password@localhost:5432/aquashield
-POSTGRES_USER=postgres
-POSTGRES_PASSWORD=password
-POSTGRES_DB=aquashield
-SECRET_KEY=your-very-secret-key-change-this
-ALGORITHM=HS256
-ACCESS_TOKEN_EXPIRE_MINUTES=30
-
-# Frontend (create web-client/.env.local)
-NEXT_PUBLIC_API_URL=http://localhost:8000
-```
-
-> **Note:** For local dev without Docker, the backend uses SQLite by default (`sql_app.db`). PostgreSQL is used when running via Docker Compose.
-
----
-
-## 📡 API Reference
-
-| Method | Endpoint | Description |
-|---|---|---|
-| `GET` | `/` | Health check |
-| `GET` | `/docs` | Swagger UI |
-| `POST` | `/api/v1/predict/` | Get disease risk predictions from water quality data |
-| `POST` | `/api/v1/sensor/` | Ingest IoT sensor readings |
-| `GET` | `/api/v1/sensor/latest` | Fetch the latest sensor data |
-
-### Example Prediction Request
-
-```bash
-curl -X POST "http://localhost:8000/api/v1/predict/" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "ph": 6.5,
-    "turbidity": 4.2,
-    "dissolved_oxygen": 7.1,
-    "conductivity": 320.0,
-    "temperature": 28.5
-  }'
-```
-
----
-
-## ☁️ Cloud Deployment
-
-### Frontend → Vercel / Netlify
-
-1. Connect your GitHub repository.
-2. Set the **Root Directory** to `web-client`.
-3. Build command: `npm run build` | Output directory: `.next`
-4. Add environment variable: `NEXT_PUBLIC_API_URL=<your-backend-url>`
-
-### Backend → Render / Railway
-
-1. Connect your GitHub repository.
-2. Select **Python** as the environment.
-3. Set **Root Directory** to `backend`.
-4. Build Command: `pip install -r requirements.txt && python ../scripts/train_model.py`
-5. Start Command: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
-6. Add all required environment variables.
-
----
-
-## 🧪 Tech Stack
-
-| Layer | Technology |
-|---|---|
-| **Frontend** | Next.js 14, TypeScript, Tailwind CSS, Recharts |
-| **Backend** | FastAPI, Python 3.9+, Uvicorn |
-| **ML Models** | Scikit-learn, XGBoost, Pandas, NumPy |
-| **Database** | SQLite (dev) / PostgreSQL (prod) |
-| **ORM** | SQLAlchemy |
-| **Auth** | JWT (python-jose) + bcrypt (passlib) |
-| **Containerization** | Docker, Docker Compose |
-
----
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/your-feature-name`
-3. Commit your changes: `git commit -m 'Add some feature'`
-4. Push to the branch: `git push origin feature/your-feature-name`
-5. Open a Pull Request
-
----
-
-## 📄 License
-
-This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
+The Core API was vastly augmented to power the new map interactions:
+- `GET /api/v1/dashboard/map-data?lat=X&lng=Y&radius_km=50.0&all_points=false`
+Now safely handles public heatmapping logic and executes Haversine filters over live dataset snapshots. 
 
 ---
 
