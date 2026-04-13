@@ -144,3 +144,23 @@ export const alertsApi = {
     getAlerts: () => apiFetch<Record<string, unknown>[]>("/alerts/"),
     getAwareness: () => apiFetch<Record<string, unknown>>("/alerts/awareness"),
 };
+
+// ── AI API ───────────────────────────────────────────────────────────────────
+export interface AIExplainPayload {
+    area: string;
+    risk_score: number;
+    risk_level: string;
+    water_quality: string;
+}
+
+export interface AIExplainResponse {
+    explanation: string;
+}
+
+export const aiApi = {
+    explain: (data: AIExplainPayload) =>
+        apiFetch<AIExplainResponse>("/ai/explain", {
+            method: "POST",
+            body: JSON.stringify(data),
+        }),
+};

@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from .endpoints import predict, users, sensor_data, auth, dashboard, alerts
+from .endpoints import predict, users, sensor_data, auth, dashboard, alerts, ai
 
 api_router = APIRouter()
 
@@ -12,3 +12,4 @@ api_router.include_router(users.router, prefix="/users", tags=["users"])
 api_router.include_router(sensor_data.router, prefix="/sensor", tags=["sensor"])
 api_router.include_router(dashboard.router, prefix="/dashboard", tags=["dashboard"])
 api_router.include_router(alerts.router, prefix="/alerts", tags=["alerts"])
+api_router.include_router(ai.router, prefix="/ai", tags=["ai"])

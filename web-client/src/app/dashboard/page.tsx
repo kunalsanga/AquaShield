@@ -1,4 +1,6 @@
 'use client';
+import { useState, useEffect } from 'react';
+import { aiApi } from "@/lib/api";
 
 import { withAuth } from "@/lib/withAuth";
 import dynamic from "next/dynamic";
@@ -30,7 +32,8 @@ import {
     Activity,
     CloudRain,
     Droplets,
-    AlertTriangle
+    AlertTriangle,
+    Sparkles
 } from "lucide-react";
 
 const DATA = [
@@ -43,6 +46,30 @@ const DATA = [
 ];
 
 function Dashboard() {
+    const [aiExplanation, setAiExplanation] = useState<string | null>(null);
+    const [isAiLoading, setIsAiLoading] = useState(false);
+    const [aiError, setAiError] = useState<string | null>(null);
+
+    useEffect(() => {
+        const fetchAiInsight = async () => {
+            setIsAiLoading(true);
+            try {
+                const aiData = await aiApi.explain({
+                    area: "System Wide Overview",
+                    risk_score: 85,
+                    risk_level: "High",
+                    water_quality: "Moderate"
+                });
+                setAiExplanation(aiData.explanation);
+            } catch (err) {
+                setAiError("Failed to fetch AI insights.");
+            } finally {
+                setIsAiLoading(false);
+            }
+        };
+        fetchAiInsight();
+    }, []);
+
     return (
         <div className="p-4 sm:p-8 space-y-8 animate-in fade-in duration-500">
             <div className="flex flex-col space-y-2">
@@ -96,6 +123,26 @@ function Dashboard() {
                     </CardContent>
                 </Card>
             </div>
+
+            {/* AI Insights Card */}
+            <Card className="border-border bg-card shadow-md overflow-hidden">
+                <CardContent className="p-6">
+                    <div className="flex items-center gap-2 font-bold text-lg mb-3 text-primary">
+                        <Sparkles className="w-5 h-5 text-amber-500" />
+                        <h3>AI System Insights</h3>
+                    </div>
+                    {isAiLoading ? (
+                        <div className="text-muted-foreground animate-pulse flex items-center gap-2">
+                            <div className="h-4 w-4 rounded-full border-2 border-primary border-t-transparent animate-spin"></div>
+                            Analyzing system data...
+                        </div>
+                    ) : aiError ? (
+                        <p className="text-red-500 text-sm">{aiError}</p>
+                    ) : aiExplanation ? (
+                        <p className="text-foreground leading-relaxed">{aiExplanation}</p>
+                    ) : null}
+                </CardContent>
+            </Card>
 
             {/* Geographical Distribution Map */}
             <Card className="shadow-sm">

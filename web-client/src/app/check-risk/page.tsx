@@ -3,8 +3,8 @@ import { useState } from 'react';
 import dynamic from "next/dynamic";
 import { Card, CardContent } from "@/components/ui/card";
 import { DISTRICTS, ALERTS } from "@/lib/mockData";
-import { dashboardApi } from "@/lib/api";
-import { ShieldCheck, ShieldAlert, Droplets, HeartPulse, MapPin } from "lucide-react";
+import { dashboardApi, aiApi } from "@/lib/api";
+import { ShieldCheck, ShieldAlert, Droplets, HeartPulse, MapPin, Sparkles } from "lucide-react";
 
 // Dynamic import for MapSelector to avoid SSR issues
 const MapSelector = dynamic(() => import("@/components/MapSelector"), { ssr: false });
@@ -14,6 +14,9 @@ export default function CheckRiskPage() {
     const [coordinates, setCoordinates] = useState<{lat: number, lng: number} | null>(null);
     const [result, setResult] = useState<any>(null);
     const [loading, setLoading] = useState(false);
+    const [aiExplanation, setAiExplanation] = useState<string | null>(null);
+    const [isAiLoading, setIsAiLoading] = useState(false);
+    const [aiError, setAiError] = useState<string | null>(null);
 
     const handleLocationSelect = (lat: number, lng: number, name: string) => {
         setCoordinates({ lat, lng });
@@ -29,6 +32,7 @@ export default function CheckRiskPage() {
         setLoading(true);
 
         try {
+            let finalResult: any = null;
             if (coordinates) {
                 // Real data lookup from map coordinates
                 const data = await dashboardApi.getMapData(coordinates.lat, coordinates.lng);
@@ -44,24 +48,43 @@ export default function CheckRiskPage() {
                     msg = "Rising turbidity or bacterial counts reported near your location.";
                 }
                 
-                setResult({
+                finalResult = {
                     district: selectedName || "Selected Location",
                     riskLevel,
                     message: msg,
                     stats: data.stats
-                });
+                };
             } else {
                 // Fallback to mock data for typed District lookups where we don't have coords
                 const alert = ALERTS.find(a => a.district.toLowerCase() === selectedName.toLowerCase());
                 if (alert) {
-                    setResult(alert);
+                    finalResult = alert;
                 } else {
-                    setResult({ 
+                    finalResult = { 
                         district: selectedName, 
                         riskLevel: "Low", 
                         message: "Water quality parameters are within safe limits. Manage standard hygiene."
-                    });
+                    };
                 }
+            }
+            setResult(finalResult);
+
+            // Fetch AI Explanation
+            try {
+                setIsAiLoading(true);
+                setAiError(null);
+                setAiExplanation(null);
+                const aiData = await aiApi.explain({
+                    area: finalResult.district || "the area",
+                    risk_score: finalResult.stats ? finalResult.stats.avg_bod * 10 : (finalResult.riskLevel === 'High' ? 82 : finalResult.riskLevel === 'Moderate' ? 50 : 20),
+                    risk_level: finalResult.riskLevel,
+                    water_quality: finalResult.riskLevel === 'High' ? "Poor" : finalResult.riskLevel === 'Moderate' ? "Moderate" : "Good"
+                });
+                setAiExplanation(aiData.explanation);
+            } catch(e) {
+                setAiError("AI Explanation unavailable at this time.");
+            } finally {
+                setIsAiLoading(false);
             }
         } catch (error) {
             console.error("Lookup failed", error);
@@ -183,6 +206,27 @@ export default function CheckRiskPage() {
                                 </div>
                             </div>
                         </div>
+                    </CardContent>
+                </Card>
+            )}
+
+            {result && (
+                <Card className="border-border bg-card shadow-md overflow-hidden mt-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    <CardContent className="p-6">
+                        <div className="flex items-center gap-2 font-bold text-lg mb-3 text-primary">
+                            <Sparkles className="w-5 h-5 text-amber-500" />
+                            <h3>AI Insights</h3>
+                        </div>
+                        {isAiLoading ? (
+                            <div className="text-muted-foreground animate-pulse flex items-center gap-2">
+                                <div className="h-4 w-4 rounded-full border-2 border-primary border-t-transparent animate-spin"></div>
+                                Analyzing area data...
+                            </div>
+                        ) : aiError ? (
+                            <p className="text-red-500 text-sm">{aiError}</p>
+                        ) : aiExplanation ? (
+                            <p className="text-foreground leading-relaxed">{aiExplanation}</p>
+                        ) : null}
                     </CardContent>
                 </Card>
             )}
