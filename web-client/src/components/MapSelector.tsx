@@ -117,22 +117,22 @@ export default function MapSelector({ onLocationSelect }: MapSelectorProps) {
     };
 
     return (
-        <div className="flex flex-col gap-2 relative">
-            <div className="flex justify-end mb-2">
+        <div className="flex flex-col gap-2 sm:gap-3 relative">
+            <div className="flex justify-end">
                 <button 
                     type="button"
                     onClick={handleLocateMe}
-                    className="flex items-center gap-2 bg-blue-50 hover:bg-blue-100 text-blue-600 text-xs font-bold px-3 py-1.5 rounded-lg border border-blue-200 transition-colors"
+                    className="flex items-center gap-2 bg-blue-50 hover:bg-blue-100 text-blue-600 text-xs sm:text-sm font-bold px-3 py-1.5 sm:py-2 rounded-lg border border-blue-200 transition-colors"
                 >
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v2"/><path d="M12 20v2"/><path d="M2 12h2"/><path d="M20 12h2"/><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="3"/></svg>
                     Use Device Location
                 </button>
             </div>
-            <div className="h-[300px] w-full rounded-xl overflow-hidden border border-gray-200 shadow-inner z-0">
+            <div className="h-[350px] sm:h-[450px] w-full rounded-xl overflow-hidden border border-gray-200 shadow-inner z-0">
                 <MapContainer 
                     center={[21.4680, 83.9820]} // Default to Sambalpur
                     zoom={5} 
-                    scrollWheelZoom={true} 
+                    scrollWheelZoom={false}
                     className="h-full w-full"
                 >
                     <TileLayer
@@ -142,9 +142,9 @@ export default function MapSelector({ onLocationSelect }: MapSelectorProps) {
                     <LocationMarker position={pinPosition} onSelect={handleSelect} />
                 </MapContainer>
             </div>
-            <div className="flex items-center justify-between text-sm text-gray-600 bg-gray-50 px-3 py-2 rounded-lg border border-gray-200">
-                <span className="font-medium text-gray-700 w-16">Selected: </span>
-                <span className={`text-right truncate flex-1 ${isLoadingName ? 'animate-pulse text-blue-600' : 'text-gray-900'}`}>
+            <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600 bg-gray-50 px-3 py-1.5 sm:py-2 rounded-lg border border-gray-200">
+                <span className="font-medium text-gray-700 shrink-0">Selected:</span>
+                <span className={`text-left sm:text-right break-words ${isLoadingName ? 'animate-pulse text-blue-600' : 'text-gray-900'}`}>
                     {locationName}
                 </span>
             </div>

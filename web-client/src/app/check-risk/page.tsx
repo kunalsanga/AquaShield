@@ -107,15 +107,15 @@ export default function CheckRiskPage() {
     };
 
     return (
-        <div className="max-w-3xl mx-auto space-y-6 pt-10 px-4 animate-in fade-in duration-500 pb-20">
+        <div className="max-w-3xl mx-auto space-y-5 sm:space-y-6 pt-6 sm:pt-10 px-3 sm:px-4 animate-in fade-in duration-500 pb-16 sm:pb-20">
             <div className="text-center mb-8">
-                <h1 className="text-3xl font-bold text-foreground">Check Area Risk</h1>
+                <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Check Area Risk</h1>
                 <p className="text-muted-foreground mt-2">Type your area, select from dropdown, or pinpoint on the map.</p>
             </div>
             
             <Card className="border-border bg-card shadow-md overflow-hidden">
-                <CardContent className="p-6">
-                    <div className="space-y-6">
+                <CardContent className="p-2 sm:p-3">
+                    <div className="space-y-3 sm:space-y-4">
                         <div className="flex flex-col gap-2">
                             <label className="text-sm font-semibold flex items-center gap-2">
                                 <MapPin className="w-4 h-4 text-blue-500"/>
@@ -133,10 +133,10 @@ export default function CheckRiskPage() {
                             </div>
                         </div>
 
-                        <div className="flex flex-col sm:flex-row gap-4">
+                        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
                             <input 
                                 list="districts-list"
-                                className="flex-1 bg-background border border-input shadow-inner rounded-xl px-4 py-3 text-foreground focus:ring-2 focus:ring-primary focus:outline-none" 
+                                className="flex-1 bg-background border border-input shadow-inner rounded-xl px-4 py-3 text-base text-foreground focus:ring-2 focus:ring-primary focus:outline-none" 
                                 placeholder="Type or select a District..."
                                 value={selectedName} 
                                 onChange={e => {
@@ -151,7 +151,7 @@ export default function CheckRiskPage() {
                             <button 
                                 onClick={handleCheck} 
                                 disabled={loading || (!selectedName && !coordinates)}
-                                className="bg-primary text-primary-foreground px-8 py-3 rounded-xl font-bold hover:bg-primary/90 transition-colors shadow-md disabled:opacity-50"
+                                className="w-full sm:w-auto bg-primary text-primary-foreground px-8 py-3 rounded-xl font-bold hover:bg-primary/90 transition-colors shadow-md disabled:opacity-50"
                             >
                                 {loading ? "Analyzing..." : "Check Risk"}
                             </button>
@@ -166,18 +166,18 @@ export default function CheckRiskPage() {
                     result.riskLevel === 'Moderate' ? 'border-amber-500 bg-amber-500/5' : 
                     'border-emerald-500 bg-emerald-500/5'
                 }`}>
-                    <CardContent className="pt-6 flex flex-col sm:flex-row items-start gap-5">
+                    <CardContent className="pt-5 sm:pt-6 flex flex-col sm:flex-row items-start gap-4 sm:gap-5">
                         {result.riskLevel === 'High' ? <ShieldAlert className="w-14 h-14 text-destructive flex-shrink-0 mt-1 drop-shadow-sm" /> : 
                          result.riskLevel === 'Moderate' ? <ShieldAlert className="w-14 h-14 text-amber-500 flex-shrink-0 mt-1 drop-shadow-sm" /> :
                          <ShieldCheck className="w-14 h-14 text-emerald-500 flex-shrink-0 mt-1 drop-shadow-sm" />}
                         <div className="space-y-4 w-full">
                             <div>
-                                <h2 className="text-2xl font-black text-foreground mb-1">{result.riskLevel} Risk in {result.district}</h2>
+                                <h2 className="text-xl sm:text-2xl font-black text-foreground mb-1">{result.riskLevel} Risk in {result.district}</h2>
                                 <p className="text-muted-foreground leading-relaxed font-medium">{result.message}</p>
                             </div>
                             
                             {result.stats && (
-                                <div className="grid grid-cols-2 gap-3 mb-4">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
                                     <div className="bg-background/80 p-3 rounded-xl border border-border shadow-sm">
                                         <p className="text-[10px] text-muted-foreground tracking-wider uppercase font-extrabold mb-1">Avg pH Level</p>
                                         <p className="text-xl font-black text-foreground">{result.stats.avg_ph}</p>
