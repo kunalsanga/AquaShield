@@ -108,19 +108,19 @@ def predict_disease(input_data: schemas.PredictionInput, db: Session = Depends(g
     risk_score = explained.final_risk_score
     risk_level = explained.risk_level
 
-        if risk_score > 80:
-            try:
-                new_alert = models.AlertLog(
-                    location=input_data.location_name or "Unknown Location",
-                    latitude=input_data.latitude,
-                    longitude=input_data.longitude,
-                    message=f"High Disease Risk Detected: {risk_score:.2f}",
-                    severity="High"
-                )
-                db.add(new_alert)
-                db.commit()
-            except Exception as db_e:
-                print(f"Alert Database error: {db_e}")
+    if risk_score > 80:
+        try:
+            new_alert = models.AlertLog(
+                location=input_data.location_name or "Unknown Location",
+                latitude=input_data.latitude,
+                longitude=input_data.longitude,
+                message=f"High Disease Risk Detected: {risk_score:.2f}",
+                severity="High",
+            )
+            db.add(new_alert)
+            db.commit()
+        except Exception as db_e:
+            print(f"Alert Database error: {db_e}")
 
     # Save to PredictionLog
     prediction = models.PredictionLog(
