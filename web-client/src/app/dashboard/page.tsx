@@ -1,11 +1,13 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { aiApi, dashboardApi } from "@/lib/api";
+import { CASE_RECORDS } from "@/lib/mockData";
+import { useAuth } from "@/lib/auth-context";
 
 import { withAuth } from "@/lib/withAuth";
 import dynamic from "next/dynamic";
 
-const MapDashboard = dynamic(() => import("@/components/MapDashboard"), { ssr: false, loading: () => <div className="h-[500px] w-full rounded-xl bg-gray-100 animate-pulse border border-gray-200"></div> });
+const MapDashboard = dynamic(() => import("@/components/MapDashboard"), { ssr: false, loading: () => <div className="h-[500px] w-full rounded-xl bg-muted animate-pulse border border-border"></div> });
 
 import {
     Card,
@@ -33,7 +35,8 @@ import {
     CloudRain,
     Droplets,
     AlertTriangle,
-    Sparkles
+    Sparkles,
+    ShieldAlert
 } from "lucide-react";
 
 const DATA = [
@@ -46,6 +49,8 @@ const DATA = [
 ];
 
 function Dashboard() {
+    const { user } = useAuth();
+    const assignedRegion = user?.assignedRegion || "Sambalpur";
     const [aiExplanation, setAiExplanation] = useState<string | null>(null);
     const [aiRecommendations, setAiRecommendations] = useState<string[] | null>(null);
     const [isAiLoading, setIsAiLoading] = useState(false);
@@ -55,6 +60,28 @@ function Dashboard() {
     const [systemDiseaseDetails, setSystemDiseaseDetails] = useState<{ name: string; severity: "High" | "Medium" | "Low"; confidence: number }[]>([]);
     const [systemDiseaseReasons, setSystemDiseaseReasons] = useState<Record<string, string>>({});
     const [systemRecs, setSystemRecs] = useState<string[]>([]);
+    const regionCases = CASE_RECORDS.filter((record) => record.district === assignedRegion);
+    const currentWeek = regionCases.reduce((max, rec) => Math.max(max, rec.weekNumber), 0);
+    const weeklyCasesCount = regionCases
+        .filter((record) => record.weekNumber === currentWeek)
+        .reduce((sum, record) => sum + record.casesReported, 0);
+    const diseasesDetectedThisMonth = new Set(
+        regionCases
+            .filter((record) => {
+                const reported = new Date(record.reportedAt);
+                const now = new Date();
+                return reported.getMonth() === now.getMonth() && reported.getFullYear() === now.getFullYear();
+            })
+            .map((record) => record.diseaseType)
+    ).size;
+    const riskDistribution = regionCases.reduce(
+        (acc, record) => {
+            const normalizedRisk = (record.riskLevel === "Moderate" ? "Medium" : record.riskLevel) as "High" | "Medium" | "Low";
+            acc[normalizedRisk] += 1;
+            return acc;
+        },
+        { High: 0, Medium: 0, Low: 0 }
+    );
 
     useEffect(() => {
         const fetchAiInsight = async () => {
@@ -97,53 +124,59 @@ function Dashboard() {
     return (
         <div className="p-4 sm:p-8 space-y-8 animate-in fade-in duration-500">
             <div className="flex flex-col space-y-2">
-                <h1 className="text-3xl font-bold tracking-tight text-gray-900">Live Dashboard</h1>
-                <p className="text-gray-500">Real-time monitoring of community health metrics.</p>
+                <h1 className="text-3xl font-bold tracking-tight text-foreground">Live Dashboard</h1>
+                <p className="text-muted-foreground">Real-time monitoring of community health metrics.</p>
+                <div className="inline-flex w-fit items-center gap-2 rounded-full bg-blue-50 border border-blue-200 px-3 py-1 text-sm text-blue-800 font-semibold">
+                    <ShieldAlert className="w-4 h-4" />
+                    Assigned Region: {assignedRegion}
+                </div>
             </div>
 
             {/* KPI Cards */}
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                 <Card className="border-l-4 border-blue-500 shadow-sm hover:shadow-md transition-shadow">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium text-gray-600">Total Cases (Week)</CardTitle>
+                        <CardTitle className="text-sm font-medium text-muted-foreground">Total Cases (Week)</CardTitle>
                         <Activity className="h-4 w-4 text-blue-500" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold text-gray-900">60</div>
-                        <p className="text-xs text-gray-500">+12% from last week</p>
+                        <div className="text-2xl font-bold text-foreground">{weeklyCasesCount}</div>
+                        <p className="text-xs text-muted-foreground">Week {currentWeek || "-"}</p>
                     </CardContent>
                 </Card>
 
                 <Card className="border-l-4 border-cyan-500 shadow-sm hover:shadow-md transition-shadow">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium text-gray-600">Avg Rainfall</CardTitle>
+                        <CardTitle className="text-sm font-medium text-muted-foreground">Diseases This Month</CardTitle>
                         <CloudRain className="h-4 w-4 text-cyan-500" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold text-gray-900">140 mm</div>
-                        <p className="text-xs text-gray-500">Moderate levels</p>
+                        <div className="text-2xl font-bold text-foreground">{diseasesDetectedThisMonth}</div>
+                        <p className="text-xs text-muted-foreground">Unique disease types detected</p>
                     </CardContent>
                 </Card>
 
                 <Card className="border-l-4 border-indigo-500 shadow-sm hover:shadow-md transition-shadow">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium text-gray-600">Water Quality</CardTitle>
+                        <CardTitle className="text-sm font-medium text-muted-foreground">Risk Distribution</CardTitle>
                         <Droplets className="h-4 w-4 text-indigo-500" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold text-yellow-600">Moderate</div>
-                        <p className="text-xs text-gray-500">Requires filtration</p>
+                        <div className="text-sm font-bold text-foreground">H:{riskDistribution.High} M:{riskDistribution.Medium} L:{riskDistribution.Low}</div>
+                        <p className="text-xs text-muted-foreground">By records in {assignedRegion}</p>
                     </CardContent>
                 </Card>
 
-                <Card className="border-l-4 border-red-500 shadow-sm hover:shadow-md transition-shadow bg-red-50">
+                <Card className="border-l-4 border-red-500 shadow-sm hover:shadow-md transition-shadow bg-red-50 dark:bg-red-950/25">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium text-red-800">Risk Level</CardTitle>
-                        <AlertTriangle className="h-4 w-4 text-red-600" />
+                        <CardTitle className="text-sm font-medium text-red-800 dark:text-red-300">Risk Level</CardTitle>
+                        <AlertTriangle className="h-4 w-4 text-red-600 dark:text-red-400" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold text-red-600">High</div>
-                        <p className="text-xs text-red-600 font-medium">Alert Authorities</p>
+                        <div className="text-2xl font-bold text-red-600 dark:text-red-400">
+                            {riskDistribution.High > riskDistribution.Medium ? "High" : "Medium"}
+                        </div>
+                        <p className="text-xs text-red-600 dark:text-red-300 font-medium">Current regional concern level</p>
                     </CardContent>
                 </Card>
             </div>
@@ -232,7 +265,7 @@ function Dashboard() {
                     <CardDescription>Real-time map of predictive health reports across regions.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <MapDashboard />
+                    <MapDashboard highlightedRegion={assignedRegion} />
                 </CardContent>
             </Card>
 

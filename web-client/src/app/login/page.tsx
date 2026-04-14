@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, FormEvent } from "react";
+import { useState, FormEvent, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Droplets, Eye, EyeOff, LogIn, AlertCircle, Loader2 } from "lucide-react";
@@ -23,7 +23,26 @@ export default function LoginPage() {
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const [isWarmingUp, setIsWarmingUp] = useState(false);
     const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        let mounted = true;
+        const warmup = async () => {
+            setIsWarmingUp(true);
+            try {
+                await authApi.warmup();
+            } catch {
+                // Ignore warmup failures; real auth call will show actual errors.
+            } finally {
+                if (mounted) setIsWarmingUp(false);
+            }
+        };
+        warmup();
+        return () => {
+            mounted = false;
+        };
+    }, []);
 
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
@@ -37,7 +56,7 @@ export default function LoginPage() {
         setIsLoading(true);
         try {
             const res = await authApi.login({ email, password });
-            login(res.email, res.access_token, res.role as UserRole);
+            login(res.email, res.access_token, res.role as UserRole, res.assigned_region || "Sambalpur");
             router.push(roleRedirectMap[res.role as UserRole] ?? "/");
         } catch (err: unknown) {
             setError(err instanceof Error ? err.message : "Login failed. Please try again.");
@@ -58,6 +77,9 @@ export default function LoginPage() {
                         </div>
                         <h1 className="text-2xl font-bold text-foreground">Welcome back</h1>
                         <p className="text-muted-foreground text-sm mt-1">Sign in to AquaShield</p>
+                        {isWarmingUp && (
+                            <p className="text-xs text-muted-foreground mt-2">Preparing server connection...</p>
+                        )}
                     </div>
 
                     {/* Error */}
@@ -124,7 +146,7 @@ export default function LoginPage() {
                             {isLoading ? (
                                 <>
                                     <Loader2 className="w-4 h-4 animate-spin" />
-                                    Signing in…
+                                    Signing in (server may take a few seconds)...
                                 </>
                             ) : (
                                 <>

@@ -6,6 +6,7 @@
 
 const RAW_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 const BASE_URL = RAW_URL.includes("/api/v1") ? RAW_URL : `${RAW_URL.replace(/\/+$/, '')}/api/v1`;
+const REQUEST_TIMEOUT_MS = 30000;
 
 // ── Low-level fetch wrapper ───────────────────────────────────────────────────
 async function apiFetch<T>(
@@ -23,10 +24,24 @@ async function apiFetch<T>(
         headers["Authorization"] = `Bearer ${token}`;
     }
 
-    const response = await fetch(`${BASE_URL}${endpoint}`, {
-        ...options,
-        headers,
-    });
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+    let response: Response;
+
+    try {
+        response = await fetch(`${BASE_URL}${endpoint}`, {
+            ...options,
+            headers,
+            signal: controller.signal,
+        });
+    } catch (err) {
+        if (err instanceof DOMException && err.name === "AbortError") {
+            throw new Error("Request timed out. The server might be waking up, please try again.");
+        }
+        throw err;
+    } finally {
+        clearTimeout(timeout);
+    }
 
     if (!response.ok) {
         const error = await response.json().catch(() => ({ detail: "Unknown error" }));
@@ -56,6 +71,7 @@ export interface TokenResponse {
     token_type: string;
     role: string;
     email: string;
+    assigned_region?: string;
 }
 
 export const authApi = {
@@ -70,6 +86,8 @@ export const authApi = {
             method: "POST",
             body: JSON.stringify(data),
         }),
+    warmup: () =>
+        apiFetch<Record<string, unknown>>("/alerts/awareness"),
 };
 
 // ── Prediction API ────────────────────────────────────────────────────────────

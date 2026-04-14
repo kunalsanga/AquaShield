@@ -1,6 +1,7 @@
 'use client';
 
 import { withAuth } from "@/lib/withAuth";
+import { useAuth } from "@/lib/auth-context";
 
 import { useState } from "react";
 import dynamic from "next/dynamic";
@@ -11,10 +12,12 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Check, Loader2, MapPin } from "lucide-react";
 
-const MapSelector = dynamic(() => import("@/components/MapSelector"), { ssr: false });
+const MapSelector = dynamic<any>(() => import("@/components/MapSelector"), { ssr: false });
 
 
 function ReportPage() {
+    const { user } = useAuth();
+    const assignedRegion = user?.assignedRegion || "Sambalpur";
     const [formData, setFormData] = useState({
         lat: null as number | null,
         lng: null as number | null,
@@ -84,17 +87,20 @@ function ReportPage() {
                 </div>
                 <h2 className="text-2xl font-bold text-foreground">Report Submitted Successfully</h2>
                 <p className="text-muted-foreground">Thank you for updating the community health records.</p>
-                <Button onClick={() => setSubmitted(false)} className="bg-blue-600 hover:bg-blue-700 text-white">Submit Another Report</Button>
+                <Button onClick={() => setSubmitted(false)} className="bg-blue-600 hover:bg-blue-700 text-primary-foreground">Submit Another Report</Button>
             </div>
         );
     }
 
     return (
-        <div className="max-w-xl mx-auto py-6 sm:py-10 px-4">
+        <div className="max-w-6xl mx-auto py-6 sm:py-10 px-4">
             <div className="bg-card shadow-xl rounded-2xl p-6 sm:p-8 border border-border">
                 <div className="mb-8 text-center">
                     <h1 className="text-2xl font-bold text-foreground">Report Health Data</h1>
                     <p className="text-muted-foreground text-sm mt-2">ASHA Worker / Clinic Submission Form</p>
+                    <p className="text-muted-foreground text-sm mt-1">
+                        Assigned area: <span className="font-semibold text-foreground">{assignedRegion}</span>
+                    </p>
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
@@ -109,7 +115,10 @@ function ReportPage() {
                             <MapPin className="w-4 h-4" />
                             Select Location
                         </Label>
-                        <MapSelector onLocationSelect={handleLocationSelect} />
+                        <MapSelector
+                            onLocationSelect={handleLocationSelect}
+                            mapClassName="h-[420px] sm:h-[540px] lg:h-[620px]"
+                        />
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -187,7 +196,7 @@ function ReportPage() {
 
                     <Button
                         type="submit"
-                        className="w-full bg-green-600 hover:bg-green-700 text-white h-11 text-base font-semibold shadow-md"
+                        className="w-full bg-green-600 hover:bg-green-700 text-primary-foreground h-11 text-base font-semibold shadow-md"
                         disabled={isSubmitting}
                     >
                         {isSubmitting ? (

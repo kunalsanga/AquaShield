@@ -39,10 +39,10 @@ export function withAuth<P extends object>(
 
         if (isLoading) {
             return (
-                <div className="min-h-screen flex items-center justify-center bg-slate-950">
+                <div className="min-h-screen flex items-center justify-center bg-background">
                     <div className="flex flex-col items-center gap-4">
                         <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
-                        <p className="text-slate-400 text-sm">Verifying access…</p>
+                        <p className="text-muted-foreground text-sm">Verifying access…</p>
                     </div>
                 </div>
             );

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, useMapEvents, CircleMarker } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, useMapEvents, CircleMarker, Circle } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import { dashboardApi, MapDataResponse } from '@/lib/api';
 
@@ -41,7 +41,21 @@ function LocationSelector({ onLocationSelect }: { onLocationSelect: (lat: number
     return null;
 }
 
-export default function MapDashboard() {
+const REGION_COORDINATES: Record<string, [number, number]> = {
+    Sambalpur: [21.4680, 83.9820],
+    Dhubri: [26.0186, 89.9856],
+    Kokrajhar: [26.4018, 90.2672],
+    Barpeta: [26.3220, 91.0069],
+    Nalbari: [26.4425, 91.4411],
+    Baksa: [26.6983, 91.5984],
+    Kamrup: [26.1445, 91.7362],
+    Darrang: [26.4429, 92.0345],
+    Sonitpur: [26.6561, 92.7926],
+    Lakhimpur: [27.2350, 94.1036],
+    Dhemaji: [27.4833, 94.5833],
+};
+
+export default function MapDashboard({ highlightedRegion }: { highlightedRegion?: string }) {
     const [centerMarker, setCenterMarker] = useState<[number, number] | null>(null);
     const [mapData, setMapData] = useState<MapDataResponse | null>(null);
     const [loading, setLoading] = useState(false);
@@ -88,6 +102,7 @@ export default function MapDashboard() {
         if (risk_level === 'Medium') return yellowIcon;
         return greenIcon;
     };
+    const regionCenter = highlightedRegion ? REGION_COORDINATES[highlightedRegion] : null;
 
     return (
         <div className="flex flex-col gap-4">
@@ -171,13 +186,13 @@ export default function MapDashboard() {
                 
                 {/* Overlay Instruction if nothing selected */}
                 {!centerMarker && !isHeatmap && !loading && (
-                   <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[400] bg-gray-900 dark:bg-gray-800 text-white px-4 py-2 rounded-full shadow-xl font-medium text-sm animate-pulse border border-gray-700">
+                   <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[400] bg-primary text-primary-foreground px-4 py-2 rounded-full shadow-xl font-medium text-sm animate-pulse border border-primary/40">
                         Click anywhere on map to filter nearby data (50km radius)
                    </div> 
                 )}
 
                 <MapContainer 
-                    center={[21.4680, 83.9820]} // Default to Sambalpur
+                    center={regionCenter || [21.4680, 83.9820]}
                     zoom={5} 
                     className="h-full w-full z-0 cursor-crosshair"
                 >
@@ -187,6 +202,18 @@ export default function MapDashboard() {
                     />
                     
                     <LocationSelector onLocationSelect={handleLocationSelect} />
+
+                    {regionCenter && (
+                        <Circle
+                            center={regionCenter}
+                            radius={35000}
+                            pathOptions={{ color: "#2563eb", fillColor: "#60a5fa", fillOpacity: 0.2, weight: 2 }}
+                        >
+                            <Popup>
+                                <p className="font-bold">Assigned Region: {highlightedRegion}</p>
+                            </Popup>
+                        </Circle>
+                    )}
                     
                     {/* The Clicked Center Marker */}
                     {centerMarker && !isHeatmap && (
@@ -225,13 +252,13 @@ export default function MapDashboard() {
                                 >
                                     <Popup className="rounded-lg shadow-sm">
                                         <div className="p-1 min-w-[200px]">
-                                            <h3 className="font-bold text-gray-900 dark:text-gray-100 border-b border-gray-200 dark:border-gray-700 pb-1 mb-2">
+                                            <h3 className="font-bold text-foreground border-b border-border pb-1 mb-2">
                                                 {record.location_name || "Unknown Area"}
                                             </h3>
                                             
-                                            <div className="space-y-1 text-sm text-gray-700 dark:text-gray-300">
+                                            <div className="space-y-1 text-sm text-muted-foreground">
                                                 <div className="flex justify-between items-center">
-                                                    <span className="text-gray-500 dark:text-gray-400">Risk Level:</span>
+                                                    <span className="text-muted-foreground">Risk Level:</span>
                                                     <span className={`font-semibold ${
                                                         record.risk_level === 'High' ? 'text-red-600 dark:text-red-400' :
                                                         record.risk_level === 'Medium' ? 'text-amber-500 dark:text-amber-400' :
@@ -239,16 +266,16 @@ export default function MapDashboard() {
                                                     }`}>{record.risk_level}</span>
                                                 </div>
                                                 <div className="flex justify-between items-center">
-                                                    <span className="text-gray-500 dark:text-gray-400">pH Level:</span>
-                                                    <span className="font-medium text-gray-900 dark:text-gray-100">{record.ph}</span>
+                                                    <span className="text-muted-foreground">pH Level:</span>
+                                                    <span className="font-medium text-foreground">{record.ph}</span>
                                                 </div>
                                                 <div className="flex justify-between items-center">
-                                                    <span className="text-gray-500 dark:text-gray-400">BOD (mg/L):</span>
-                                                    <span className="font-medium text-gray-900 dark:text-gray-100">{record.bod}</span>
+                                                    <span className="text-muted-foreground">BOD (mg/L):</span>
+                                                    <span className="font-medium text-foreground">{record.bod}</span>
                                                 </div>
                                                 <div className="flex justify-between items-center">
-                                                    <span className="text-gray-500 dark:text-gray-400">DO (mg/L):</span>
-                                                    <span className="font-medium text-gray-900 dark:text-gray-100">{record.dissolved_oxygen}</span>
+                                                    <span className="text-muted-foreground">DO (mg/L):</span>
+                                                    <span className="font-medium text-foreground">{record.dissolved_oxygen}</span>
                                                 </div>
                                             </div>
                                         </div>

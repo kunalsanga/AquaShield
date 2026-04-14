@@ -7,7 +7,7 @@ import { dashboardApi, aiApi } from "@/lib/api";
 import { ShieldCheck, ShieldAlert, Droplets, HeartPulse, MapPin, Sparkles } from "lucide-react";
 
 // Dynamic import for MapSelector to avoid SSR issues
-const MapSelector = dynamic(() => import("@/components/MapSelector"), { ssr: false });
+const MapSelector = dynamic<any>(() => import("@/components/MapSelector"), { ssr: false });
 
 export default function CheckRiskPage() {
     const [selectedName, setSelectedName] = useState("");
@@ -107,21 +107,24 @@ export default function CheckRiskPage() {
     };
 
     return (
-        <div className="max-w-3xl mx-auto space-y-5 sm:space-y-6 pt-6 sm:pt-10 px-3 sm:px-4 animate-in fade-in duration-500 pb-16 sm:pb-20">
+        <div className="max-w-6xl mx-auto space-y-5 sm:space-y-6 pt-6 sm:pt-10 px-3 sm:px-4 animate-in fade-in duration-500 pb-16 sm:pb-20">
             <div className="text-center mb-8">
                 <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Check Area Risk</h1>
                 <p className="text-muted-foreground mt-2">Type your area, select from dropdown, or pinpoint on the map.</p>
             </div>
             
             <Card className="border-border bg-card shadow-md overflow-hidden">
-                <CardContent className="p-2 sm:p-3">
+                <CardContent className="p-3 sm:p-5">
                     <div className="space-y-3 sm:space-y-4">
                         <div className="flex flex-col gap-2">
                             <label className="text-sm font-semibold flex items-center gap-2">
                                 <MapPin className="w-4 h-4 text-blue-500"/>
                                 1. Pinpoint Location on Map
                             </label>
-                            <MapSelector onLocationSelect={handleLocationSelect} />
+                            <MapSelector
+                                onLocationSelect={handleLocationSelect}
+                                mapClassName="h-[420px] sm:h-[540px] lg:h-[620px]"
+                            />
                         </div>
                         
                         <div className="relative my-4 hidden sm:block">

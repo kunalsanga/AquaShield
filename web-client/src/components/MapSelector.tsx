@@ -26,8 +26,9 @@ if (typeof window !== "undefined") {
     L.Marker.prototype.options.icon = DefaultIcon;
 }
 
-interface MapSelectorProps {
+export interface MapSelectorProps {
     onLocationSelect: (lat: number, lng: number, locationName: string) => void;
+    mapClassName?: string;
 }
 
 function LocationMarker({ position, onSelect }: { position: L.LatLngTuple | null, onSelect: (lat: number, lng: number) => void }) {
@@ -48,7 +49,7 @@ function LocationMarker({ position, onSelect }: { position: L.LatLngTuple | null
     );
 }
 
-export default function MapSelector({ onLocationSelect }: MapSelectorProps) {
+export default function MapSelector({ onLocationSelect, mapClassName }: MapSelectorProps) {
     const [locationName, setLocationName] = useState<string>("Click on the map to select a location");
     const [isLoadingName, setIsLoadingName] = useState(false);
     const [pinPosition, setPinPosition] = useState<L.LatLngTuple | null>(null);
@@ -122,13 +123,13 @@ export default function MapSelector({ onLocationSelect }: MapSelectorProps) {
                 <button 
                     type="button"
                     onClick={handleLocateMe}
-                    className="flex items-center gap-2 bg-blue-50 hover:bg-blue-100 text-blue-600 text-xs sm:text-sm font-bold px-3 py-1.5 sm:py-2 rounded-lg border border-blue-200 transition-colors"
+                    className="flex items-center gap-2 bg-primary/10 hover:bg-primary/20 text-primary text-xs sm:text-sm font-bold px-3 py-1.5 sm:py-2 rounded-lg border border-primary/20 transition-colors"
                 >
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v2"/><path d="M12 20v2"/><path d="M2 12h2"/><path d="M20 12h2"/><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="3"/></svg>
                     Use Device Location
                 </button>
             </div>
-            <div className="h-[350px] sm:h-[450px] w-full rounded-xl overflow-hidden border border-gray-200 shadow-inner z-0">
+            <div className={`${mapClassName || "h-[350px] sm:h-[450px]"} w-full rounded-xl overflow-hidden border border-border shadow-inner z-0`}>
                 <MapContainer 
                     center={[21.4680, 83.9820]} // Default to Sambalpur
                     zoom={5} 
@@ -142,9 +143,9 @@ export default function MapSelector({ onLocationSelect }: MapSelectorProps) {
                     <LocationMarker position={pinPosition} onSelect={handleSelect} />
                 </MapContainer>
             </div>
-            <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600 bg-gray-50 px-3 py-1.5 sm:py-2 rounded-lg border border-gray-200">
-                <span className="font-medium text-gray-700 shrink-0">Selected:</span>
-                <span className={`text-left sm:text-right break-words ${isLoadingName ? 'animate-pulse text-blue-600' : 'text-gray-900'}`}>
+            <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground bg-muted/40 px-3 py-1.5 sm:py-2 rounded-lg border border-border">
+                <span className="font-medium text-foreground shrink-0">Selected:</span>
+                <span className={`text-left sm:text-right break-words ${isLoadingName ? 'animate-pulse text-primary' : 'text-foreground'}`}>
                     {locationName}
                 </span>
             </div>

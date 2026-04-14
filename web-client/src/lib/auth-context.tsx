@@ -21,7 +21,7 @@ import type { AuthUser, UserRole } from "@/types";
 interface AuthContextValue {
     user: AuthUser | null;
     isLoading: boolean;
-    login: (email: string, token: string, role: UserRole) => void;
+    login: (email: string, token: string, role: UserRole, assignedRegion?: string) => void;
     logout: () => void;
     checkRole: (requiredRoles: UserRole[]) => boolean;
 }
@@ -40,24 +40,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const token = localStorage.getItem("token");
         const email = localStorage.getItem("email");
         const role = localStorage.getItem("role") as UserRole | null;
+        const assignedRegion = localStorage.getItem("assignedRegion") || undefined;
 
         if (token && email && role) {
-            setUser({ token, email, role });
+            setUser({ token, email, role, assignedRegion });
         }
         setIsLoading(false);
     }, []);
 
-    const login = useCallback((email: string, token: string, role: UserRole) => {
+    const login = useCallback((email: string, token: string, role: UserRole, assignedRegion?: string) => {
         localStorage.setItem("token", token);
         localStorage.setItem("email", email);
         localStorage.setItem("role", role);
-        setUser({ email, token, role });
+        if (assignedRegion) {
+            localStorage.setItem("assignedRegion", assignedRegion);
+        } else {
+            localStorage.removeItem("assignedRegion");
+        }
+        setUser({ email, token, role, assignedRegion });
     }, []);
 
     const logout = useCallback(() => {
         localStorage.removeItem("token");
         localStorage.removeItem("email");
         localStorage.removeItem("role");
+        localStorage.removeItem("assignedRegion");
         setUser(null);
         router.push("/");
     }, [router]);

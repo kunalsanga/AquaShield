@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, FormEvent } from "react";
+import { useState, FormEvent, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
@@ -55,10 +55,29 @@ export default function RegisterPage() {
     const [role, setRole] = useState<UserRole>("PUBLIC");
     const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const [isWarmingUp, setIsWarmingUp] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState(false);
 
     const selectedRole = ROLES.find((r) => r.value === role)!;
+
+    useEffect(() => {
+        let mounted = true;
+        const warmup = async () => {
+            setIsWarmingUp(true);
+            try {
+                await authApi.warmup();
+            } catch {
+                // Ignore warmup failures; registration call handles real error states.
+            } finally {
+                if (mounted) setIsWarmingUp(false);
+            }
+        };
+        warmup();
+        return () => {
+            mounted = false;
+        };
+    }, []);
 
     const validate = (): string | null => {
         if (!email) return "Email is required.";
@@ -116,6 +135,9 @@ export default function RegisterPage() {
                         </div>
                         <h1 className="text-2xl font-bold text-foreground">Create your account</h1>
                         <p className="text-muted-foreground text-sm mt-1">Join AquaShield to protect community health</p>
+                        {isWarmingUp && (
+                            <p className="text-xs text-muted-foreground mt-2">Preparing server connection...</p>
+                        )}
                     </div>
 
                     {/* Error */}
@@ -238,7 +260,7 @@ export default function RegisterPage() {
                             {isLoading ? (
                                 <>
                                     <Loader2 className="w-4 h-4 animate-spin" />
-                                    Creating account…
+                                    Creating account (server may take a few seconds)...
                                 </>
                             ) : (
                                 <>

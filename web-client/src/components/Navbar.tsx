@@ -29,12 +29,17 @@ export default function Navbar() {
         const links = [{ name: "Home", href: "/" }];
 
         if (role === "ASHA") {
-            links.push({ name: "Report Case", href: "/report" });
+            links.push(
+                { name: "Report Case", href: "/report" },
+                { name: "Emergency Reporting", href: "/emergency-reporting" },
+                { name: "My Reports", href: "/my-reports" }
+            );
         }
 
         if (role === "OFFICIAL") {
             links.push(
                 { name: "Dashboard", href: "/dashboard" },
+                { name: "Cases", href: "/cases" },
                 { name: "Alerts", href: "/alerts" },
                 { name: "Report Case", href: "/report" }
             );
