@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { aiApi } from "@/lib/api";
+import { aiApi, dashboardApi } from "@/lib/api";
 
 import { withAuth } from "@/lib/withAuth";
 import dynamic from "next/dynamic";
@@ -47,20 +47,38 @@ const DATA = [
 
 function Dashboard() {
     const [aiExplanation, setAiExplanation] = useState<string | null>(null);
+    const [aiRecommendations, setAiRecommendations] = useState<string[] | null>(null);
     const [isAiLoading, setIsAiLoading] = useState(false);
     const [aiError, setAiError] = useState<string | null>(null);
+    const [systemReasons, setSystemReasons] = useState<string[]>([]);
+    const [systemDiseases, setSystemDiseases] = useState<string[]>([]);
+    const [systemRecs, setSystemRecs] = useState<string[]>([]);
 
     useEffect(() => {
         const fetchAiInsight = async () => {
             setIsAiLoading(true);
             try {
+                // Use an all-points map-data call to get explainable system stats
+                const mapData = await dashboardApi.getMapData(22.3511, 78.6677, true);
+                const stats: any = mapData.stats || {};
+                const reasons: string[] = stats.reasons || [];
+                const likelyDiseases: string[] = stats.likely_diseases || [];
+                const recs: string[] = stats.recommendations || [];
+
+                setSystemReasons(reasons);
+                setSystemDiseases(likelyDiseases);
+                setSystemRecs(recs);
+
                 const aiData = await aiApi.explain({
                     area: "System Wide Overview",
-                    risk_score: 85,
-                    risk_level: "High",
-                    water_quality: "Moderate"
+                    risk_score: stats.risk_score ?? 85,
+                    risk_level: stats.risk_level ?? "High",
+                    water_quality: "Moderate",
+                    reasons,
+                    likely_diseases: likelyDiseases,
                 });
                 setAiExplanation(aiData.explanation);
+                setAiRecommendations(aiData.recommendations || null);
             } catch (err) {
                 setAiError("Failed to fetch AI insights.");
             } finally {
@@ -139,7 +157,44 @@ function Dashboard() {
                     ) : aiError ? (
                         <p className="text-red-500 text-sm">{aiError}</p>
                     ) : aiExplanation ? (
-                        <p className="text-foreground leading-relaxed">{aiExplanation}</p>
+                        <div className="space-y-4">
+                            <p className="text-foreground leading-relaxed">{aiExplanation}</p>
+
+                            {systemReasons.length > 0 && (
+                                <div className="bg-background/70 rounded-xl p-4 border border-border/60">
+                                    <p className="font-bold text-foreground text-sm mb-2">Why the system is at this risk</p>
+                                    <ul className="list-disc pl-5 space-y-1 text-sm text-muted-foreground">
+                                        {systemReasons.slice(0, 6).map((r, idx) => (
+                                            <li key={idx}>{r}</li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            )}
+
+                            {systemDiseases.length > 0 && (
+                                <div className="bg-background/70 rounded-xl p-4 border border-border/60">
+                                    <p className="font-bold text-foreground text-sm mb-2">Possible diseases</p>
+                                    <div className="flex flex-wrap gap-2">
+                                        {systemDiseases.slice(0, 6).map((d, idx) => (
+                                            <span key={idx} className="px-3 py-1 rounded-full text-xs font-bold bg-amber-500/15 text-amber-700 border border-amber-500/30">
+                                                {d}
+                                            </span>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {(aiRecommendations && aiRecommendations.length > 0) || systemRecs.length > 0 ? (
+                                <div className="bg-background/70 rounded-xl p-4 border border-border/60">
+                                    <p className="font-bold text-foreground text-sm mb-2">Recommendations</p>
+                                    <ul className="list-disc pl-5 space-y-1 text-sm text-muted-foreground">
+                                        {(aiRecommendations || systemRecs).slice(0, 6).map((a, idx) => (
+                                            <li key={idx}>{a}</li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            ) : null}
+                        </div>
                     ) : null}
                 </CardContent>
             </Card>

@@ -1,5 +1,5 @@
 from pydantic import BaseModel, EmailStr
-from typing import Optional, List, Literal
+from typing import Optional, List, Literal, Dict, Any
 from datetime import datetime
 
 # ── Sensor ─────────────────────────────────────────────────────────────────────
@@ -25,6 +25,9 @@ class PredictionInput(BaseModel):
     latitude: Optional[float] = None
     longitude: Optional[float] = None
     location_name: Optional[str] = None
+    # Optional inputs for explainable/rule-augmented risk logic
+    previous_cases: Optional[float] = None
+    current_cases: Optional[float] = None
 
 class PredictionOutput(BaseModel):
     id: Optional[int] = None
@@ -39,6 +42,11 @@ class PredictionOutput(BaseModel):
     rainfall: Optional[float] = None
     explanation: Optional[str] = None
     timestamp: Optional[datetime] = None
+    # Explainable extensions (optional)
+    reasons: Optional[List[str]] = None
+    likely_diseases: Optional[List[str]] = None
+    recommendations: Optional[List[str]] = None
+    derived_features: Optional[Dict[str, Any]] = None
 
     class Config:
         from_attributes = True

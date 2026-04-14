@@ -6,6 +6,7 @@ from ...schemas import schemas
 from ...models import models
 from ...ml_utils import DummyModel, DummyScaler
 from ...core.deps import require_role
+from ...risk_logic import explainable_final_risk
 import joblib
 import numpy as np
 import os
@@ -74,13 +75,38 @@ def predict_disease(input_data: schemas.PredictionInput, db: Session = Depends(g
     typhoid_pred = cholera_pred * 0.8
     diarrhea_pred = cholera_pred * 1.5
 
-    risk_score = min(100, (cholera_pred / 20) * 100)
+    ml_risk_score = min(100, (cholera_pred / 20) * 100)
 
-    risk_level = "Low"
-    if risk_score > 30:
-        risk_level = "Medium"
-    if risk_score > 70:
-        risk_level = "High"
+    # Pull previous cases from DB if caller didn't pass them
+    previous_cases = input_data.previous_cases
+    current_cases = input_data.current_cases
+    if current_cases is None:
+        current_cases = float(cholera_pred)
+
+    if previous_cases is None and input_data.location_name:
+        prev = (
+            db.query(models.PredictionLog)
+            .filter(models.PredictionLog.location_name == input_data.location_name)
+            .order_by(models.PredictionLog.timestamp.desc())
+            .first()
+        )
+        if prev is not None:
+            previous_cases = float(prev.cholera_cases)
+
+    explained = explainable_final_risk(
+        ml_risk_score=float(ml_risk_score),
+        ph=float(input_data.ph),
+        bod=float(input_data.bod),
+        dissolved_oxygen=float(input_data.dissolved_oxygen),
+        turbidity=float(input_data.turbidity),
+        coliform=float(input_data.coliform),
+        rainfall=float(input_data.rainfall),
+        previous_cases=previous_cases,
+        current_cases=current_cases,
+    )
+
+    risk_score = explained.final_risk_score
+    risk_level = explained.risk_level
 
         if risk_score > 80:
             try:
@@ -129,7 +155,15 @@ def predict_disease(input_data: schemas.PredictionInput, db: Session = Depends(g
         "typhoid_cases_predicted": int(typhoid_pred),
         "diarrhea_cases_predicted": int(diarrhea_pred),
         "rainfall": prediction.rainfall,
-        "explanation": "Predicted based on current water quality metrics.",
+        "explanation": "Predicted by combining ML output with rule-based adjustments.",
+        "reasons": explained.reasons,
+        "likely_diseases": explained.likely_diseases,
+        "recommendations": explained.recommendations,
+        "derived_features": {
+            "disease_growth_rate": explained.derived.disease_growth_rate,
+            "rainfall_intensity_index": explained.derived.rainfall_intensity_index,
+            "water_quality_score": explained.derived.water_quality_score,
+        },
         "timestamp": prediction.timestamp
     }
 

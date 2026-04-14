@@ -84,6 +84,8 @@ export interface PredictionInput {
     latitude?: number;
     longitude?: number;
     location_name?: string;
+    previous_cases?: number;
+    current_cases?: number;
 }
 
 export interface PredictionOutput {
@@ -98,6 +100,10 @@ export interface PredictionOutput {
     diarrhea_cases_predicted: number;
     rainfall?: number;
     explanation?: string;
+    reasons?: string[];
+    likely_diseases?: string[];
+    recommendations?: string[];
+    derived_features?: Record<string, unknown>;
     timestamp?: string;
 }
 
@@ -129,6 +135,12 @@ export interface MapDataResponse {
         avg_bod: number;
         high_risk_count: number;
         total_points: number;
+        risk_score?: number;
+        risk_level?: string;
+        reasons?: string[];
+        likely_diseases?: string[];
+        recommendations?: string[];
+        derived_features?: Record<string, unknown>;
     };
     points: MapDataPoint[];
 }
@@ -148,13 +160,16 @@ export const alertsApi = {
 // ── AI API ───────────────────────────────────────────────────────────────────
 export interface AIExplainPayload {
     area: string;
-    risk_score: number;
     risk_level: string;
-    water_quality: string;
+    risk_score?: number;
+    water_quality?: string;
+    reasons?: string[];
+    likely_diseases?: string[];
 }
 
 export interface AIExplainResponse {
     explanation: string;
+    recommendations?: string[];
 }
 
 export const aiApi = {

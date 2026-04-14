@@ -12,6 +12,7 @@ from typing import List, Optional
 from ...db.session import get_db
 from ...models.models import SensorLog, AlertLog
 from ...core.deps import require_role
+from ...risk_logic import explainable_final_risk
 
 router = APIRouter()
 
@@ -291,6 +292,48 @@ def get_map_data(
         "high_risk_count": high_risk_count,
         "total_points": total
     }
+
+    # Explainable, derived insights for the selected area (based on aggregated stats)
+    if total > 0:
+        # Use conservative defaults for fields not present in CPCB cache
+        ph = float(stats["avg_ph"])
+        bod = float(stats["avg_bod"])
+        do = sum(p.get("dissolved_oxygen", 6.0) for p in filtered) / total
+        # Not available in CPCB cache; keep 0 to avoid false spikes
+        turbidity = 0.0
+        coliform = 0.0
+        rainfall = 0.0
+
+        # Use avg_bod-based proxy as an ML baseline (keeps backward-compatible behavior)
+        # Convert to a 0-100 "ml-like" score
+        ml_proxy = max(0.0, min(100.0, bod * 10.0))
+
+        explained = explainable_final_risk(
+            ml_risk_score=ml_proxy,
+            ph=ph,
+            bod=bod,
+            dissolved_oxygen=float(do),
+            turbidity=float(turbidity),
+            coliform=float(coliform),
+            rainfall=float(rainfall),
+            previous_cases=None,
+            current_cases=None,
+        )
+
+        stats.update(
+            {
+                "risk_score": explained.final_risk_score,
+                "risk_level": explained.risk_level,
+                "reasons": explained.reasons,
+                "likely_diseases": explained.likely_diseases,
+                "recommendations": explained.recommendations,
+                "derived_features": {
+                    "disease_growth_rate": explained.derived.disease_growth_rate,
+                    "rainfall_intensity_index": explained.derived.rainfall_intensity_index,
+                    "water_quality_score": explained.derived.water_quality_score,
+                },
+            }
+        )
     
     return {
         "stats": stats,

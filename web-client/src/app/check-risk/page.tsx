@@ -15,6 +15,7 @@ export default function CheckRiskPage() {
     const [result, setResult] = useState<any>(null);
     const [loading, setLoading] = useState(false);
     const [aiExplanation, setAiExplanation] = useState<string | null>(null);
+    const [aiRecommendations, setAiRecommendations] = useState<string[] | null>(null);
     const [isAiLoading, setIsAiLoading] = useState(false);
     const [aiError, setAiError] = useState<string | null>(null);
 
@@ -37,22 +38,27 @@ export default function CheckRiskPage() {
                 // Real data lookup from map coordinates
                 const data = await dashboardApi.getMapData(coordinates.lat, coordinates.lng);
                 
-                let riskLevel = "Low";
+                let riskLevel = data.stats.risk_level || "Low";
                 let msg = "Water quality parameters are within safe limits. Manage standard hygiene.";
                 
-                if (data.stats.high_risk_count > 0 || data.stats.avg_bod > 5) {
-                    riskLevel = "High";
-                    msg = "Critical contamination detected nearby. High probability of waterborne issues.";
-                } else if (data.stats.avg_bod > 3) {
-                    riskLevel = "Moderate";
-                    msg = "Rising turbidity or bacterial counts reported near your location.";
+                if (!data.stats.risk_level) {
+                    if (data.stats.high_risk_count > 0 || data.stats.avg_bod > 5) {
+                        riskLevel = "High";
+                        msg = "Critical contamination detected nearby. High probability of waterborne issues.";
+                    } else if (data.stats.avg_bod > 3) {
+                        riskLevel = "Moderate";
+                        msg = "Rising turbidity or bacterial counts reported near your location.";
+                    }
                 }
                 
                 finalResult = {
                     district: selectedName || "Selected Location",
                     riskLevel,
                     message: msg,
-                    stats: data.stats
+                    stats: data.stats,
+                    reasons: data.stats.reasons || [],
+                    likely_diseases: data.stats.likely_diseases || [],
+                    recommendations: data.stats.recommendations || [],
                 };
             } else {
                 // Fallback to mock data for typed District lookups where we don't have coords
@@ -74,13 +80,17 @@ export default function CheckRiskPage() {
                 setIsAiLoading(true);
                 setAiError(null);
                 setAiExplanation(null);
+                setAiRecommendations(null);
                 const aiData = await aiApi.explain({
                     area: finalResult.district || "the area",
                     risk_score: finalResult.stats ? finalResult.stats.avg_bod * 10 : (finalResult.riskLevel === 'High' ? 82 : finalResult.riskLevel === 'Moderate' ? 50 : 20),
                     risk_level: finalResult.riskLevel,
-                    water_quality: finalResult.riskLevel === 'High' ? "Poor" : finalResult.riskLevel === 'Moderate' ? "Moderate" : "Good"
+                    water_quality: finalResult.riskLevel === 'High' ? "Poor" : finalResult.riskLevel === 'Moderate' ? "Moderate" : "Good",
+                    reasons: finalResult.reasons || [],
+                    likely_diseases: finalResult.likely_diseases || [],
                 });
                 setAiExplanation(aiData.explanation);
+                setAiRecommendations(aiData.recommendations || null);
             } catch(e) {
                 setAiError("AI Explanation unavailable at this time.");
             } finally {
@@ -198,13 +208,39 @@ export default function CheckRiskPage() {
                                     <div>
                                         <p className="font-bold text-foreground text-sm">Disease Probability</p>
                                         <p className="text-sm text-muted-foreground mt-0.5">
-                                            {result.riskLevel === 'High' ? 'High risk of Cholera and Diarrhea outbreaks detected in local clinics.' : 
-                                             result.riskLevel === 'Moderate' ? 'Moderate risk of waterborne pathogens.' : 
-                                             'Low probability of outbreak.'}
+                                            {result.likely_diseases && result.likely_diseases.length > 0
+                                                ? `Possible diseases: ${result.likely_diseases.join(", ")}.`
+                                                : (result.riskLevel === 'High' ? 'High risk of waterborne outbreaks detected nearby.' : 
+                                                   result.riskLevel === 'Moderate' ? 'Moderate risk of waterborne pathogens.' : 
+                                                   'Low probability of outbreak.')}
                                         </p>
                                     </div>
                                 </div>
                             </div>
+
+                            {/* Why This Risk */}
+                            {result.reasons && result.reasons.length > 0 && (
+                                <div className="bg-background/70 rounded-xl p-5 border border-border/60">
+                                    <p className="font-bold text-foreground text-sm mb-2">Why this risk</p>
+                                    <ul className="list-disc pl-5 space-y-1 text-sm text-muted-foreground">
+                                        {result.reasons.slice(0, 6).map((r: string, idx: number) => (
+                                            <li key={idx}>{r}</li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            )}
+
+                            {/* Recommendations */}
+                            {result.recommendations && result.recommendations.length > 0 && (
+                                <div className="bg-background/70 rounded-xl p-5 border border-border/60">
+                                    <p className="font-bold text-foreground text-sm mb-2">Recommended actions</p>
+                                    <ul className="list-disc pl-5 space-y-1 text-sm text-muted-foreground">
+                                        {result.recommendations.slice(0, 6).map((a: string, idx: number) => (
+                                            <li key={idx}>{a}</li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            )}
                         </div>
                     </CardContent>
                 </Card>
@@ -225,7 +261,19 @@ export default function CheckRiskPage() {
                         ) : aiError ? (
                             <p className="text-red-500 text-sm">{aiError}</p>
                         ) : aiExplanation ? (
-                            <p className="text-foreground leading-relaxed">{aiExplanation}</p>
+                            <div className="space-y-3">
+                                <p className="text-foreground leading-relaxed">{aiExplanation}</p>
+                                {aiRecommendations && aiRecommendations.length > 0 && (
+                                    <div className="bg-background/70 rounded-xl p-4 border border-border/60">
+                                        <p className="font-bold text-foreground text-sm mb-2">AI recommendations</p>
+                                        <ul className="list-disc pl-5 space-y-1 text-sm text-muted-foreground">
+                                            {aiRecommendations.slice(0, 6).map((a, idx) => (
+                                                <li key={idx}>{a}</li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
+                            </div>
                         ) : null}
                     </CardContent>
                 </Card>
