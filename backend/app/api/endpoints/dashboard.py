@@ -318,6 +318,7 @@ def get_map_data(
             rainfall=float(rainfall),
             previous_cases=None,
             current_cases=None,
+            location_name=", ".join([p.get("location_name", "") for p in filtered[:10]]),
         )
 
         stats.update(
@@ -326,6 +327,8 @@ def get_map_data(
                 "risk_level": explained.risk_level,
                 "reasons": explained.reasons,
                 "likely_diseases": explained.likely_diseases,
+                "likely_disease_predictions": explained.likely_disease_predictions,
+                "disease_reasons": explained.disease_reasons,
                 "recommendations": explained.recommendations,
                 "derived_features": {
                     "disease_growth_rate": explained.derived.disease_growth_rate,

@@ -102,6 +102,8 @@ export interface PredictionOutput {
     explanation?: string;
     reasons?: string[];
     likely_diseases?: string[];
+    likely_disease_predictions?: { name: string; severity: "High" | "Medium" | "Low"; confidence: number }[];
+    disease_reasons?: Record<string, string>;
     recommendations?: string[];
     derived_features?: Record<string, unknown>;
     timestamp?: string;
@@ -139,6 +141,8 @@ export interface MapDataResponse {
         risk_level?: string;
         reasons?: string[];
         likely_diseases?: string[];
+        likely_disease_predictions?: { name: string; severity: "High" | "Medium" | "Low"; confidence: number }[];
+        disease_reasons?: Record<string, string>;
         recommendations?: string[];
         derived_features?: Record<string, unknown>;
     };

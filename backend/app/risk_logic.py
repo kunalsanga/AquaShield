@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 
 @dataclass(frozen=True)
@@ -17,6 +17,8 @@ class ExplainableRisk:
     risk_level: str  # Low, Medium, High
     reasons: List[str]
     likely_diseases: List[str]
+    likely_disease_predictions: List[Dict[str, object]]
+    disease_reasons: Dict[str, str]
     recommendations: List[str]
     derived: DerivedFeatures
 
@@ -120,6 +122,91 @@ def disease_hints(
     return out
 
 
+def _disease_severity(confidence: float) -> str:
+    if confidence >= 0.75:
+        return "High"
+    if confidence >= 0.45:
+        return "Medium"
+    return "Low"
+
+
+def disease_predictions(
+    *,
+    bod: float,
+    dissolved_oxygen: float,
+    coliform: float,
+    turbidity: float,
+    rainfall_intensity: float,
+    location_name: Optional[str],
+) -> Tuple[List[Dict[str, object]], Dict[str, str]]:
+    """
+    Multi-disease rule-based predictions with region + rainfall adjustments.
+    Keeps output deterministic and bounded in [0, 0.99].
+    """
+    region = (location_name or "").lower()
+    is_sambalpur_like = "sambalpur" in region
+
+    candidates: List[Tuple[str, float, str]] = []
+
+    # Diarrhea: high coliform + turbidity
+    diarrhea = 0.15 + (0.35 if coliform > 100 else 0.0) + (0.25 if turbidity >= 8 else 0.0)
+    diarrhea_reason = "High coliform and turbidity detected" if diarrhea >= 0.4 else "Mild contamination indicators present"
+    candidates.append(("Diarrhea", diarrhea, diarrhea_reason))
+
+    # Cholera: high BOD + low DO + contamination
+    cholera = 0.1 + (0.3 if bod > 5 else 0.0) + (0.3 if dissolved_oxygen < 5 else 0.0) + (0.15 if coliform > 120 else 0.0)
+    cholera_reason = "Low DO and high BOD levels indicate severe contamination"
+    candidates.append(("Cholera", cholera, cholera_reason))
+
+    # Typhoid: high turbidity + medium coliform
+    typhoid = 0.1 + (0.3 if turbidity >= 8 else 0.0) + (0.25 if 70 <= coliform <= 180 else 0.0)
+    typhoid_reason = "High turbidity and sustained bacterial load suggest typhoid risk"
+    candidates.append(("Typhoid", typhoid, typhoid_reason))
+
+    # Hepatitis A: contaminated water + moderate coliform
+    hep_a = 0.08 + (0.25 if bod > 3 else 0.0) + (0.25 if 60 <= coliform <= 150 else 0.0)
+    hep_a_reason = "Contaminated water with moderate coliform indicates Hepatitis A possibility"
+    candidates.append(("Hepatitis A", hep_a, hep_a_reason))
+
+    # Dysentery: very high coliform + sanitation proxy
+    dysentery = 0.08 + (0.45 if coliform > 200 else 0.0) + (0.2 if turbidity > 10 else 0.0)
+    dysentery_reason = "Very high coliform and poor sanitation indicators detected"
+    candidates.append(("Dysentery", dysentery, dysentery_reason))
+
+    # Gastroenteritis: generalized contamination
+    gastro = 0.12 + (0.25 if turbidity >= 6 else 0.0) + (0.2 if coliform >= 90 else 0.0) + (0.1 if bod > 4 else 0.0)
+    gastro_reason = "General contamination pattern with elevated turbidity and bacteria"
+    candidates.append(("Gastroenteritis", gastro, gastro_reason))
+
+    boosted: List[Tuple[str, float, str]] = []
+    for name, conf, reason in candidates:
+        adjusted = conf
+        if is_sambalpur_like and name in {"Diarrhea", "Typhoid", "Gastroenteritis"}:
+            adjusted += 0.1
+        if rainfall_intensity >= 0.7:
+            adjusted += 0.1
+        elif rainfall_intensity >= 0.4:
+            adjusted += 0.05
+        boosted.append((name, _clamp(adjusted, 0.0, 0.99), reason))
+
+    detailed: List[Dict[str, object]] = []
+    reasons: Dict[str, str] = {}
+    for name, conf, reason in boosted:
+        if conf < 0.35:
+            continue
+        detailed.append(
+            {
+                "name": name,
+                "severity": _disease_severity(conf),
+                "confidence": round(conf, 2),
+            }
+        )
+        reasons[name] = reason
+
+    detailed.sort(key=lambda x: float(x["confidence"]), reverse=True)
+    return detailed, reasons
+
+
 def base_recommendations(risk_level: str) -> List[str]:
     lvl = (risk_level or "").lower().strip()
     if lvl == "high":
@@ -152,6 +239,7 @@ def explainable_final_risk(
     rainfall: float,
     previous_cases: Optional[float],
     current_cases: Optional[float],
+    location_name: Optional[str] = None,
 ) -> ExplainableRisk:
     """
     Combine ML + rule-based adjustments into a final score with explanations.
@@ -219,6 +307,16 @@ def explainable_final_risk(
         risk_level = "High"
 
     likely = disease_hints(bod=bod, dissolved_oxygen=dissolved_oxygen, coliform=coliform, turbidity=turbidity)
+    detailed_predictions, disease_reason_map = disease_predictions(
+        bod=bod,
+        dissolved_oxygen=dissolved_oxygen,
+        coliform=coliform,
+        turbidity=turbidity,
+        rainfall_intensity=rain_idx,
+        location_name=location_name,
+    )
+    if detailed_predictions:
+        likely = [d["name"] for d in detailed_predictions]
     recs = base_recommendations(risk_level)
 
     # Keep reasons concise but stable
@@ -235,6 +333,8 @@ def explainable_final_risk(
         risk_level=risk_level,
         reasons=deduped[:6],
         likely_diseases=likely,
+        likely_disease_predictions=detailed_predictions,
+        disease_reasons=disease_reason_map,
         recommendations=recs,
         derived=DerivedFeatures(
             disease_growth_rate=round(growth_rate, 2) if growth_rate is not None else None,

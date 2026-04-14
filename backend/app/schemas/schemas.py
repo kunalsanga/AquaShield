@@ -45,6 +45,8 @@ class PredictionOutput(BaseModel):
     # Explainable extensions (optional)
     reasons: Optional[List[str]] = None
     likely_diseases: Optional[List[str]] = None
+    likely_disease_predictions: Optional[List[Dict[str, Any]]] = None
+    disease_reasons: Optional[Dict[str, str]] = None
     recommendations: Optional[List[str]] = None
     derived_features: Optional[Dict[str, Any]] = None
 

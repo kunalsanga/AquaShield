@@ -103,6 +103,7 @@ def predict_disease(input_data: schemas.PredictionInput, db: Session = Depends(g
         rainfall=float(input_data.rainfall),
         previous_cases=previous_cases,
         current_cases=current_cases,
+        location_name=input_data.location_name,
     )
 
     risk_score = explained.final_risk_score
@@ -158,6 +159,8 @@ def predict_disease(input_data: schemas.PredictionInput, db: Session = Depends(g
         "explanation": "Predicted by combining ML output with rule-based adjustments.",
         "reasons": explained.reasons,
         "likely_diseases": explained.likely_diseases,
+        "likely_disease_predictions": explained.likely_disease_predictions,
+        "disease_reasons": explained.disease_reasons,
         "recommendations": explained.recommendations,
         "derived_features": {
             "disease_growth_rate": explained.derived.disease_growth_rate,

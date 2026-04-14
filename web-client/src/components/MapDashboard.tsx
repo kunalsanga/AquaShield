@@ -128,6 +128,36 @@ export default function MapDashboard() {
                     </div>
                 </div>
             )}
+            {mapData?.stats?.likely_disease_predictions && mapData.stats.likely_disease_predictions.length > 0 && (
+                <div className="bg-card border border-border rounded-xl p-4 shadow-sm">
+                    <p className="font-bold text-foreground mb-2">Possible Diseases</p>
+                    <div className="flex flex-wrap gap-2">
+                        {mapData.stats.likely_disease_predictions.slice(0, 8).map((d, idx) => (
+                            <span
+                                key={`${d.name}-${idx}`}
+                                className={`px-3 py-1 rounded-full text-xs font-bold border ${
+                                    d.severity === "High"
+                                        ? "bg-red-500/15 text-red-700 border-red-500/30"
+                                        : d.severity === "Medium"
+                                        ? "bg-amber-500/15 text-amber-700 border-amber-500/30"
+                                        : "bg-emerald-500/15 text-emerald-700 border-emerald-500/30"
+                                }`}
+                                title={(mapData.stats.disease_reasons && mapData.stats.disease_reasons[d.name]) || "No reason available"}
+                            >
+                                {d.name} {d.severity} ({Math.round((d.confidence || 0) * 100)}%)
+                            </span>
+                        ))}
+                    </div>
+                    <div className="mt-3 space-y-1">
+                        {mapData.stats.likely_disease_predictions.slice(0, 4).map((d, idx) => (
+                            <p key={`why-${idx}`} className="text-xs text-muted-foreground">
+                                <span className="font-semibold">Why {d.name}?</span>{" "}
+                                {(mapData.stats.disease_reasons && mapData.stats.disease_reasons[d.name]) || "No specific reason available."}
+                            </p>
+                        ))}
+                    </div>
+                </div>
+            )}
 
             <div className="h-[500px] w-full rounded-xl overflow-hidden border border-border shadow-md relative">
                 

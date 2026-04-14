@@ -52,6 +52,8 @@ function Dashboard() {
     const [aiError, setAiError] = useState<string | null>(null);
     const [systemReasons, setSystemReasons] = useState<string[]>([]);
     const [systemDiseases, setSystemDiseases] = useState<string[]>([]);
+    const [systemDiseaseDetails, setSystemDiseaseDetails] = useState<{ name: string; severity: "High" | "Medium" | "Low"; confidence: number }[]>([]);
+    const [systemDiseaseReasons, setSystemDiseaseReasons] = useState<Record<string, string>>({});
     const [systemRecs, setSystemRecs] = useState<string[]>([]);
 
     useEffect(() => {
@@ -63,10 +65,14 @@ function Dashboard() {
                 const stats: any = mapData.stats || {};
                 const reasons: string[] = stats.reasons || [];
                 const likelyDiseases: string[] = stats.likely_diseases || [];
+                const likelyDiseaseDetails = stats.likely_disease_predictions || [];
+                const diseaseReasons = stats.disease_reasons || {};
                 const recs: string[] = stats.recommendations || [];
 
                 setSystemReasons(reasons);
                 setSystemDiseases(likelyDiseases);
+                setSystemDiseaseDetails(likelyDiseaseDetails);
+                setSystemDiseaseReasons(diseaseReasons);
                 setSystemRecs(recs);
 
                 const aiData = await aiApi.explain({
@@ -175,12 +181,32 @@ function Dashboard() {
                                 <div className="bg-background/70 rounded-xl p-4 border border-border/60">
                                     <p className="font-bold text-foreground text-sm mb-2">Possible diseases</p>
                                     <div className="flex flex-wrap gap-2">
-                                        {systemDiseases.slice(0, 6).map((d, idx) => (
-                                            <span key={idx} className="px-3 py-1 rounded-full text-xs font-bold bg-amber-500/15 text-amber-700 border border-amber-500/30">
-                                                {d}
+                                        {(systemDiseaseDetails.length > 0 ? systemDiseaseDetails : systemDiseases.map((name) => ({ name, severity: "Medium" as const, confidence: 0.5 }))).slice(0, 8).map((d, idx) => (
+                                            <span
+                                                key={idx}
+                                                className={`px-3 py-1 rounded-full text-xs font-bold border ${
+                                                    d.severity === "High"
+                                                        ? "bg-red-500/15 text-red-700 border-red-500/30"
+                                                        : d.severity === "Medium"
+                                                        ? "bg-amber-500/15 text-amber-700 border-amber-500/30"
+                                                        : "bg-emerald-500/15 text-emerald-700 border-emerald-500/30"
+                                                }`}
+                                                title={systemDiseaseReasons[d.name] || "No reason available"}
+                                            >
+                                                {d.name} {d.severity} ({Math.round((d.confidence || 0.5) * 100)}%)
                                             </span>
                                         ))}
                                     </div>
+                                    {systemDiseaseDetails.length > 0 && (
+                                        <div className="mt-3 space-y-1">
+                                            {systemDiseaseDetails.slice(0, 4).map((d, idx) => (
+                                                <p key={idx} className="text-xs text-muted-foreground">
+                                                    <span className="font-semibold">Why {d.name}?</span>{" "}
+                                                    {systemDiseaseReasons[d.name] || "No specific reason available."}
+                                                </p>
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
                             )}
 

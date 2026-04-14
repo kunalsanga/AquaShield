@@ -58,6 +58,8 @@ export default function CheckRiskPage() {
                     stats: data.stats,
                     reasons: data.stats.reasons || [],
                     likely_diseases: data.stats.likely_diseases || [],
+                    likely_disease_predictions: data.stats.likely_disease_predictions || [],
+                    disease_reasons: data.stats.disease_reasons || {},
                     recommendations: data.stats.recommendations || [],
                 };
             } else {
@@ -227,6 +229,38 @@ export default function CheckRiskPage() {
                                             <li key={idx}>{r}</li>
                                         ))}
                                     </ul>
+                                </div>
+                            )}
+
+                            {/* Possible Diseases */}
+                            {result.likely_disease_predictions && result.likely_disease_predictions.length > 0 && (
+                                <div className="bg-background/70 rounded-xl p-5 border border-border/60">
+                                    <p className="font-bold text-foreground text-sm mb-3">Possible diseases</p>
+                                    <div className="flex flex-wrap gap-2">
+                                        {result.likely_disease_predictions.slice(0, 8).map((d: any, idx: number) => (
+                                            <span
+                                                key={`${d.name}-${idx}`}
+                                                className={`px-3 py-1 rounded-full text-xs font-bold border ${
+                                                    d.severity === "High"
+                                                        ? "bg-red-500/15 text-red-700 border-red-500/30"
+                                                        : d.severity === "Medium"
+                                                        ? "bg-amber-500/15 text-amber-700 border-amber-500/30"
+                                                        : "bg-emerald-500/15 text-emerald-700 border-emerald-500/30"
+                                                }`}
+                                                title={(result.disease_reasons && result.disease_reasons[d.name]) || "No reason available"}
+                                            >
+                                                {d.name} {d.severity} ({Math.round((d.confidence || 0) * 100)}%)
+                                            </span>
+                                        ))}
+                                    </div>
+                                    <div className="mt-3 space-y-1">
+                                        {result.likely_disease_predictions.slice(0, 4).map((d: any, idx: number) => (
+                                            <p key={`reason-${d.name}-${idx}`} className="text-xs text-muted-foreground">
+                                                <span className="font-semibold">Why {d.name}?</span>{" "}
+                                                {(result.disease_reasons && result.disease_reasons[d.name]) || "No specific reason available."}
+                                            </p>
+                                        ))}
+                                    </div>
                                 </div>
                             )}
 
